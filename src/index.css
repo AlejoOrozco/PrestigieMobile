@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+/* Luxury script for accent words (paired with Great Vibes in index.html) */
+.font-luxury-script {
+  font-family: "Great Vibes", cursive;
+  font-weight: 400;
+  font-style: normal;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body {
+  margin: 0;
+  overscroll-behavior: none;
+  touch-action: pan-y;
+}
+
+/* Hide scrollbars defensively (should be none due to overflow:hidden). */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge legacy */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* Category card image: soft edge blend into dark frame (hides hard image/bg boundary) */
+.card-image-edge-fade {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background:
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.72) 0%, transparent 32%),
+    linear-gradient(to top, rgba(0, 0, 0, 0.72) 0%, transparent 32%),
+    linear-gradient(to right, rgba(0, 0, 0, 0.55) 0%, transparent 26%),
+    linear-gradient(to left, rgba(0, 0, 0, 0.55) 0%, transparent 26%),
+    radial-gradient(
+      ellipse 95% 85% at 50% 50%,
+      transparent 42%,
+      rgba(0, 0, 0, 0.22) 100%
+    );
+}

@@ -1,0 +1,511 @@
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import gsap from 'gsap'
+
+import videoSeq1 from '../video/secuences/Secuence1.mp4'
+import videoSeq2 from '../video/secuences/Secuence2.mp4'
+import { BRAND_CHAMPAGNE, BRAND_CHAMPAGNE_SHINE } from '../constants/brandColors'
+import ShinyText from './ui/ShinyText'
+import './ScrollVideoSection.css'
+
+const SCROLL_SECTION_HEIGHT_VH = 260
+const DIM_OVERLAY_MAX = 0.52
+
+/** Fundido tipo hero/BlurText: opacidad + blur + ligero movimiento vertical. */
+const TEXT_BLUR_IN = 'blur(14px)'
+const TEXT_BLUR_OUT = 'blur(12px)'
+
+/**
+ * Última fracción de cada clip donde la reproducción se suaviza (playbackRate).
+ * Evita un corte brusco al final.
+ */
+const TAIL_FRACTION = 0.2
+const TAIL_MIN_RATE = 0.26
+
+function applyPlaybackTail(video: HTMLVideoElement) {
+  const d = video.duration
+  if (!Number.isFinite(d) || d <= 0) {
+    video.playbackRate = 1
+    return
+  }
+  const t = video.currentTime
+  const tail = d * TAIL_FRACTION
+  if (t < d - tail) {
+    video.playbackRate = 1
+    return
+  }
+  const u = (t - (d - tail)) / tail
+  const eased = 1 - (1 - TAIL_MIN_RATE) * u * u
+  video.playbackRate = Math.max(TAIL_MIN_RATE, eased)
+}
+
+const COPY = {
+  seq1: 'El mundo, en silencio',
+  scrollHint: 'Desliza hacia abajo para continuar',
+  seq2Main: 'Así suena lo esencial.',
+  seq2Sub: 'Estás listo?',
+} as const
+
+type Phase = 'seq1' | 'seq1_post' | 'seq2' | 'seq2_post'
+
+type ScrollVideoSectionProps = {
+  id?: string
+  /** Tras terminar la secuencia 2; abre el catálogo de productos (página de prueba). */
+  onViewProducts?: () => void
+}
+
+export function ScrollVideoSection({ id, onViewProducts }: ScrollVideoSectionProps) {
+  const containerRef = useRef<HTMLElement>(null)
+  const video1Ref = useRef<HTMLVideoElement>(null)
+  const video2Ref = useRef<HTMLVideoElement>(null)
+  const text1Ref = useRef<HTMLParagraphElement>(null)
+  const scrollHintRef = useRef<HTMLDivElement>(null)
+  const seq2MainRef = useRef<HTMLHeadingElement>(null)
+  const seq2SubRef = useRef<HTMLParagraphElement>(null)
+  const productsCtaRef = useRef<HTMLDivElement>(null)
+  const dimOverlayRef = useRef<HTMLDivElement>(null)
+
+  const [phase, setPhase] = useState<Phase>('seq1')
+  const phaseRef = useRef<Phase>('seq1')
+
+  useEffect(() => {
+    phaseRef.current = phase
+  }, [phase])
+
+  const playback1StartedRef = useRef(false)
+  const seq2StartedRef = useRef(false)
+  const touchStartYRef = useRef<number | null>(null)
+
+  const isSectionVisiblyOnScreen = useCallback(() => {
+    const el = containerRef.current
+    if (!el) return false
+    const rect = el.getBoundingClientRect()
+    const vh = window.innerHeight
+    return rect.top < vh * 0.92 && rect.bottom > vh * 0.08
+  }, [])
+
+  const tryPlaySeq1 = useCallback(() => {
+    const video = video1Ref.current
+    if (!video || playback1StartedRef.current) return
+    if (!Number.isFinite(video.duration) || video.duration <= 0) return
+    if (!isSectionVisiblyOnScreen()) return
+
+    playback1StartedRef.current = true
+    video.playbackRate = 1
+    video.currentTime = 0
+    void video.play().catch(() => {
+      playback1StartedRef.current = false
+    })
+  }, [isSectionVisiblyOnScreen])
+
+  useLayoutEffect(() => {
+    const text1 = text1Ref.current
+    const hint = scrollHintRef.current
+    const main2 = seq2MainRef.current
+    const sub2 = seq2SubRef.current
+    const dim = dimOverlayRef.current
+    if (!text1 || !hint || !main2 || !sub2 || !dim) return
+
+    gsap.set(dim, { opacity: 0 })
+    gsap.set(text1, { opacity: 0, y: 28, filter: TEXT_BLUR_IN })
+    gsap.set(hint, { opacity: 0, y: 14, filter: TEXT_BLUR_IN })
+    gsap.set(main2, { opacity: 0, y: 28, filter: TEXT_BLUR_IN })
+    gsap.set(sub2, { opacity: 0, y: 14, filter: TEXT_BLUR_IN })
+    const cta = productsCtaRef.current
+    if (cta) gsap.set(cta, { opacity: 0, y: 22, filter: TEXT_BLUR_IN })
+  }, [])
+
+  useLayoutEffect(() => {
+    const video = video1Ref.current
+    const container = containerRef.current
+    const text1 = text1Ref.current
+    const hint = scrollHintRef.current
+    const dim = dimOverlayRef.current
+    if (!video || !container || !text1 || !hint || !dim) return
+
+    const onSeq1Ended = () => {
+      if (phaseRef.current !== 'seq1') return
+      video.playbackRate = 1
+      setPhase('seq1_post')
+      gsap.to(dim, { opacity: DIM_OVERLAY_MAX, duration: 1, ease: 'power2.out' })
+      gsap.fromTo(
+        text1,
+        { opacity: 0, y: 28, filter: TEXT_BLUR_IN },
+        {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 1.05,
+          ease: 'power2.out',
+        },
+      )
+      gsap.fromTo(
+        hint,
+        { opacity: 0, y: 14, filter: TEXT_BLUR_IN },
+        {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 0.75,
+          ease: 'power2.out',
+          delay: 0.5,
+        },
+      )
+    }
+
+    const onLoaded = () => tryPlaySeq1()
+
+    video.addEventListener('ended', onSeq1Ended)
+    video.addEventListener('loadedmetadata', onLoaded)
+    video.addEventListener('canplay', onLoaded)
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.2) {
+            tryPlaySeq1()
+            break
+          }
+        }
+      },
+      { threshold: [0, 0.15, 0.2, 0.35, 0.5] },
+    )
+    observer.observe(container)
+
+    const t = window.setTimeout(() => tryPlaySeq1(), 350)
+
+    return () => {
+      window.clearTimeout(t)
+      observer.disconnect()
+      video.removeEventListener('ended', onSeq1Ended)
+      video.removeEventListener('loadedmetadata', onLoaded)
+      video.removeEventListener('canplay', onLoaded)
+    }
+  }, [tryPlaySeq1])
+
+  const startSequence2 = useCallback(() => {
+    if (seq2StartedRef.current || phaseRef.current !== 'seq1_post') return
+    seq2StartedRef.current = true
+
+    const v1 = video1Ref.current
+    const v2 = video2Ref.current
+    const text1 = text1Ref.current
+    const hint = scrollHintRef.current
+    const dim = dimOverlayRef.current
+    if (!v1 || !v2 || !text1 || !hint || !dim) return
+
+    setPhase('seq2')
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        v1.pause()
+        v1.playbackRate = 1
+        v2.playbackRate = 1
+        v2.currentTime = 0
+        gsap.set(v1, { opacity: 0 })
+        gsap.set(v2, { opacity: 1 })
+        void v2.play().catch(() => {})
+      },
+    })
+
+    tl.to(dim, { opacity: 0, duration: 1, ease: 'power2.in' })
+    tl.fromTo(
+      text1,
+      { opacity: 1, y: 0, filter: 'blur(0px)' },
+      {
+        opacity: 0,
+        y: 28,
+        filter: TEXT_BLUR_OUT,
+        duration: 1,
+        ease: 'power2.in',
+      },
+      0,
+    )
+    tl.fromTo(
+      hint,
+      { opacity: 1, y: 0, filter: 'blur(0px)' },
+      {
+        opacity: 0,
+        y: 14,
+        filter: TEXT_BLUR_OUT,
+        duration: 0.7,
+        ease: 'power2.in',
+      },
+      0.45,
+    )
+  }, [])
+
+  const onSeq2Ended = useCallback(() => {
+    if (phaseRef.current !== 'seq2') return
+    const v2 = video2Ref.current
+    if (v2) v2.playbackRate = 1
+    const main2 = seq2MainRef.current
+    const sub2 = seq2SubRef.current
+    const dim = dimOverlayRef.current
+    if (!main2 || !sub2 || !dim) return
+
+    setPhase('seq2_post')
+
+    gsap.to(dim, { opacity: DIM_OVERLAY_MAX, duration: 1, ease: 'power2.out' })
+    gsap.fromTo(
+      main2,
+      { opacity: 0, y: 28, filter: TEXT_BLUR_IN },
+      {
+        opacity: 1,
+        y: 0,
+        filter: 'blur(0px)',
+        duration: 1.05,
+        ease: 'power2.out',
+      },
+    )
+    gsap.fromTo(
+      sub2,
+      { opacity: 0, y: 14, filter: TEXT_BLUR_IN },
+      {
+        opacity: 1,
+        y: 0,
+        filter: 'blur(0px)',
+        duration: 0.75,
+        ease: 'power2.out',
+        delay: 0.5,
+      },
+    )
+
+    const cta = productsCtaRef.current
+    if (cta && onViewProducts) {
+      gsap.set(cta, { opacity: 0, y: 22, filter: TEXT_BLUR_IN })
+      gsap.fromTo(
+        cta,
+        { opacity: 0, y: 22, filter: TEXT_BLUR_IN },
+        {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 0.75,
+          ease: 'power2.out',
+          delay: 1.35,
+        },
+      )
+    }
+  }, [onViewProducts])
+
+  useEffect(() => {
+    if (phase !== 'seq1_post') return
+
+    const onWheel = (e: WheelEvent) => {
+      if (phaseRef.current !== 'seq1_post') return
+      if (e.deltaY > 1) {
+        e.preventDefault()
+        startSequence2()
+      }
+    }
+
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartYRef.current = e.touches[0]?.clientY ?? null
+    }
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (phaseRef.current !== 'seq1_post') return
+      const start = touchStartYRef.current
+      if (start == null) return
+      const y = e.touches[0]?.clientY
+      if (y == null) return
+      if (start - y > 24) startSequence2()
+    }
+
+    window.addEventListener('wheel', onWheel, { passive: false })
+    window.addEventListener('touchstart', onTouchStart, { passive: true })
+    window.addEventListener('touchmove', onTouchMove, { passive: true })
+
+    return () => {
+      window.removeEventListener('wheel', onWheel)
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchmove', onTouchMove)
+    }
+  }, [phase, startSequence2])
+
+  useLayoutEffect(() => {
+    const v2 = video2Ref.current
+    if (!v2) return
+
+    v2.addEventListener('ended', onSeq2Ended)
+    return () => v2.removeEventListener('ended', onSeq2Ended)
+  }, [onSeq2Ended])
+
+  useEffect(() => {
+    const v1El = video1Ref.current
+    const v2El = video2Ref.current
+
+    let raf = 0
+    const tick = () => {
+      const v1 = video1Ref.current
+      const v2 = video2Ref.current
+      if (v1) {
+        if (!v1.paused && v1.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+          applyPlaybackTail(v1)
+        } else {
+          v1.playbackRate = 1
+        }
+      }
+      if (v2) {
+        if (!v2.paused && v2.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+          applyPlaybackTail(v2)
+        } else {
+          v2.playbackRate = 1
+        }
+      }
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => {
+      cancelAnimationFrame(raf)
+      if (v1El) v1El.playbackRate = 1
+      if (v2El) v2El.playbackRate = 1
+    }
+  }, [])
+
+  return (
+    <section
+      id={id}
+      ref={containerRef}
+      className="relative bg-black"
+      style={{ height: `${SCROLL_SECTION_HEIGHT_VH}vh` }}
+    >
+      <div className="sticky top-0 flex h-screen w-full items-center justify-center bg-black">
+        <div className="relative h-full w-full overflow-hidden">
+          <div className="scroll-video-glow" aria-hidden />
+
+          <video
+            ref={video1Ref}
+            className="absolute inset-0 z-[1] h-full w-full object-contain"
+            src={videoSeq1}
+            muted
+            playsInline
+            preload="auto"
+            autoPlay={false}
+          />
+
+          <video
+            ref={video2Ref}
+            className="absolute inset-0 z-[1] h-full w-full object-contain opacity-0"
+            src={videoSeq2}
+            muted
+            playsInline
+            preload="auto"
+            autoPlay={false}
+          />
+
+          <div
+            ref={dimOverlayRef}
+            className="scroll-video-dim pointer-events-none absolute inset-0 z-[2] bg-black"
+            style={{ opacity: 0 }}
+            aria-hidden
+          />
+
+          <div className="pointer-events-none absolute inset-0 z-[3] flex flex-col items-center justify-center gap-3 px-6">
+            <p
+              ref={text1Ref}
+              className="max-w-4xl text-center text-3xl font-medium tracking-wide will-change-[filter,opacity,transform] sm:text-4xl md:text-5xl"
+              style={{ letterSpacing: '0.06em', opacity: 0 }}
+            >
+              <ShinyText
+                text={COPY.seq1}
+                speed={3}
+                delay={1}
+                color={BRAND_CHAMPAGNE}
+                shineColor={BRAND_CHAMPAGNE_SHINE}
+                spread={150}
+                direction="left"
+                yoyo={false}
+                pauseOnHover={false}
+                disabled={false}
+                className="text-3xl font-medium tracking-[0.06em] sm:text-4xl md:text-5xl"
+              />
+            </p>
+          </div>
+
+          <div
+            ref={scrollHintRef}
+            className="scroll-video-hint pointer-events-none absolute bottom-[12%] left-1/2 z-[4] -translate-x-1/2 px-4"
+            style={{ opacity: 0 }}
+            role="status"
+            aria-live="polite"
+          >
+            <span className="inline-flex items-center rounded-full border border-white/15 bg-black/50 px-4 py-2 shadow-lg backdrop-blur-md will-change-[filter,opacity,transform]">
+              <ShinyText
+                text={COPY.scrollHint}
+                speed={3}
+                delay={1}
+                color={BRAND_CHAMPAGNE}
+                shineColor={BRAND_CHAMPAGNE_SHINE}
+                spread={150}
+                direction="left"
+                yoyo={false}
+                pauseOnHover={false}
+                disabled={false}
+                className="text-xs font-medium tracking-wide sm:text-sm"
+              />
+            </span>
+          </div>
+
+          <div className="pointer-events-none absolute inset-0 z-[3] flex flex-col items-center justify-center gap-2 px-6 text-center">
+            <h2
+              ref={seq2MainRef}
+              className="max-w-4xl text-3xl font-medium tracking-wide will-change-[filter,opacity,transform] sm:text-4xl md:text-5xl"
+              style={{ letterSpacing: '0.06em', opacity: 0 }}
+            >
+              <ShinyText
+                text={COPY.seq2Main}
+                speed={3}
+                delay={1}
+                color={BRAND_CHAMPAGNE}
+                shineColor={BRAND_CHAMPAGNE_SHINE}
+                spread={150}
+                direction="left"
+                yoyo={false}
+                pauseOnHover={false}
+                disabled={false}
+                className="text-3xl font-medium tracking-[0.06em] sm:text-4xl md:text-5xl"
+              />
+            </h2>
+            <p
+              ref={seq2SubRef}
+              className="mx-auto mt-1 max-w-xl text-sm will-change-[filter,opacity,transform] sm:mt-2 sm:text-base"
+              style={{ opacity: 0 }}
+            >
+              <ShinyText
+                text={COPY.seq2Sub}
+                speed={3}
+                delay={1}
+                color={BRAND_CHAMPAGNE}
+                shineColor={BRAND_CHAMPAGNE_SHINE}
+                spread={150}
+                direction="left"
+                yoyo={false}
+                pauseOnHover={false}
+                disabled={false}
+                className="text-sm sm:text-base"
+              />
+            </p>
+
+            {onViewProducts ? (
+              <div
+                ref={productsCtaRef}
+                className="mt-8 max-w-md will-change-[filter,opacity,transform]"
+                style={{ opacity: 0 }}
+              >
+                <button
+                  type="button"
+                  onClick={onViewProducts}
+                  className="pointer-events-auto w-full rounded-full border border-[#c9a882]/45 bg-black/40 px-6 py-3 text-sm font-medium tracking-wide backdrop-blur-sm transition-colors hover:bg-[#c9a882]/15 sm:text-base"
+                  style={{ color: BRAND_CHAMPAGNE }}
+                >
+                  Ver todos los productos
+                </button>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
