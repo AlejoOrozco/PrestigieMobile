@@ -1,23 +1,17 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 
-import videoSeq1 from '../video/secuences/Secuence1.mp4'
-import videoSeq2 from '../video/secuences/Secuence2.mp4'
 import { BRAND_CHAMPAGNE, BRAND_CHAMPAGNE_SHINE } from '../constants/brandColors'
+import type { ScrollVideoCopy } from '../constants/scrollVideoCopy'
 import ShinyText from './ui/ShinyText'
 import './ScrollVideoSection.css'
 
 const SCROLL_SECTION_HEIGHT_VH = 260
 const DIM_OVERLAY_MAX = 0.52
 
-/** Fundido tipo hero/BlurText: opacidad + blur + ligero movimiento vertical. */
 const TEXT_BLUR_IN = 'blur(14px)'
 const TEXT_BLUR_OUT = 'blur(12px)'
 
-/**
- * Última fracción de cada clip donde la reproducción se suaviza (playbackRate).
- * Evita un corte brusco al final.
- */
 const TAIL_FRACTION = 0.2
 const TAIL_MIN_RATE = 0.26
 
@@ -38,29 +32,31 @@ function applyPlaybackTail(video: HTMLVideoElement) {
   video.playbackRate = Math.max(TAIL_MIN_RATE, eased)
 }
 
-const COPY = {
-  seq1: 'El mundo, en silencio',
-  scrollHint: 'Desliza hacia abajo para continuar',
-  seq2Main: 'Así suena lo esencial.',
-  seq2Sub: 'Estás listo?',
-} as const
-
 type Phase = 'seq1' | 'seq1_post' | 'seq2' | 'seq2_post'
 
-type ScrollVideoSectionProps = {
+export type ScrollVideoSectionProps = {
   id?: string
-  /** Tras terminar la secuencia 2; abre el catálogo de productos (página de prueba). */
+  videoSrc1: string
+  videoSrc2: string
+  copy: ScrollVideoCopy
   onViewProducts?: () => void
 }
 
-export function ScrollVideoSection({ id, onViewProducts }: ScrollVideoSectionProps) {
+export function ScrollVideoSection({
+  id,
+  videoSrc1,
+  videoSrc2,
+  copy,
+  onViewProducts,
+}: ScrollVideoSectionProps) {
   const containerRef = useRef<HTMLElement>(null)
   const video1Ref = useRef<HTMLVideoElement>(null)
   const video2Ref = useRef<HTMLVideoElement>(null)
   const text1Ref = useRef<HTMLParagraphElement>(null)
+  const seq1SubRef = useRef<HTMLParagraphElement | null>(null)
   const scrollHintRef = useRef<HTMLDivElement>(null)
   const seq2MainRef = useRef<HTMLHeadingElement>(null)
-  const seq2SubRef = useRef<HTMLParagraphElement>(null)
+  const seq2SubRef = useRef<HTMLParagraphElement | null>(null)
   const productsCtaRef = useRef<HTMLDivElement>(null)
   const dimOverlayRef = useRef<HTMLDivElement>(null)
 
@@ -103,13 +99,15 @@ export function ScrollVideoSection({ id, onViewProducts }: ScrollVideoSectionPro
     const main2 = seq2MainRef.current
     const sub2 = seq2SubRef.current
     const dim = dimOverlayRef.current
-    if (!text1 || !hint || !main2 || !sub2 || !dim) return
+    const sub1 = seq1SubRef.current
+    if (!text1 || !hint || !main2 || !dim) return
 
     gsap.set(dim, { opacity: 0 })
     gsap.set(text1, { opacity: 0, y: 28, filter: TEXT_BLUR_IN })
+    if (sub1) gsap.set(sub1, { opacity: 0, y: 20, filter: TEXT_BLUR_IN })
     gsap.set(hint, { opacity: 0, y: 14, filter: TEXT_BLUR_IN })
     gsap.set(main2, { opacity: 0, y: 28, filter: TEXT_BLUR_IN })
-    gsap.set(sub2, { opacity: 0, y: 14, filter: TEXT_BLUR_IN })
+    if (sub2) gsap.set(sub2, { opacity: 0, y: 14, filter: TEXT_BLUR_IN })
     const cta = productsCtaRef.current
     if (cta) gsap.set(cta, { opacity: 0, y: 22, filter: TEXT_BLUR_IN })
   }, [])
@@ -138,6 +136,21 @@ export function ScrollVideoSection({ id, onViewProducts }: ScrollVideoSectionPro
           ease: 'power2.out',
         },
       )
+      const sub1 = seq1SubRef.current
+      if (sub1) {
+        gsap.fromTo(
+          sub1,
+          { opacity: 0, y: 20, filter: TEXT_BLUR_IN },
+          {
+            opacity: 1,
+            y: 0,
+            filter: 'blur(0px)',
+            duration: 0.85,
+            ease: 'power2.out',
+            delay: 0.35,
+          },
+        )
+      }
       gsap.fromTo(
         hint,
         { opacity: 0, y: 14, filter: TEXT_BLUR_IN },
@@ -147,7 +160,7 @@ export function ScrollVideoSection({ id, onViewProducts }: ScrollVideoSectionPro
           filter: 'blur(0px)',
           duration: 0.75,
           ease: 'power2.out',
-          delay: 0.5,
+          delay: sub1 ? 0.65 : 0.5,
         },
       )
     }
@@ -191,6 +204,7 @@ export function ScrollVideoSection({ id, onViewProducts }: ScrollVideoSectionPro
     const text1 = text1Ref.current
     const hint = scrollHintRef.current
     const dim = dimOverlayRef.current
+    const sub1 = seq1SubRef.current
     if (!v1 || !v2 || !text1 || !hint || !dim) return
 
     setPhase('seq2')
@@ -220,6 +234,20 @@ export function ScrollVideoSection({ id, onViewProducts }: ScrollVideoSectionPro
       },
       0,
     )
+    if (sub1) {
+      tl.fromTo(
+        sub1,
+        { opacity: 1, y: 0, filter: 'blur(0px)' },
+        {
+          opacity: 0,
+          y: 20,
+          filter: TEXT_BLUR_OUT,
+          duration: 0.85,
+          ease: 'power2.in',
+        },
+        0.12,
+      )
+    }
     tl.fromTo(
       hint,
       { opacity: 1, y: 0, filter: 'blur(0px)' },
@@ -241,7 +269,7 @@ export function ScrollVideoSection({ id, onViewProducts }: ScrollVideoSectionPro
     const main2 = seq2MainRef.current
     const sub2 = seq2SubRef.current
     const dim = dimOverlayRef.current
-    if (!main2 || !sub2 || !dim) return
+    if (!main2 || !dim) return
 
     setPhase('seq2_post')
 
@@ -257,18 +285,20 @@ export function ScrollVideoSection({ id, onViewProducts }: ScrollVideoSectionPro
         ease: 'power2.out',
       },
     )
-    gsap.fromTo(
-      sub2,
-      { opacity: 0, y: 14, filter: TEXT_BLUR_IN },
-      {
-        opacity: 1,
-        y: 0,
-        filter: 'blur(0px)',
-        duration: 0.75,
-        ease: 'power2.out',
-        delay: 0.5,
-      },
-    )
+    if (sub2) {
+      gsap.fromTo(
+        sub2,
+        { opacity: 0, y: 14, filter: TEXT_BLUR_IN },
+        {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 0.75,
+          ease: 'power2.out',
+          delay: 0.5,
+        },
+      )
+    }
 
     const cta = productsCtaRef.current
     if (cta && onViewProducts) {
@@ -282,7 +312,7 @@ export function ScrollVideoSection({ id, onViewProducts }: ScrollVideoSectionPro
           filter: 'blur(0px)',
           duration: 0.75,
           ease: 'power2.out',
-          delay: 1.35,
+          delay: sub2 ? 1.35 : 1.1,
         },
       )
     }
@@ -376,8 +406,9 @@ export function ScrollVideoSection({ id, onViewProducts }: ScrollVideoSectionPro
 
           <video
             ref={video1Ref}
+            key={videoSrc1}
             className="absolute inset-0 z-[1] h-full w-full object-contain"
-            src={videoSeq1}
+            src={videoSrc1}
             muted
             playsInline
             preload="auto"
@@ -386,8 +417,9 @@ export function ScrollVideoSection({ id, onViewProducts }: ScrollVideoSectionPro
 
           <video
             ref={video2Ref}
+            key={videoSrc2}
             className="absolute inset-0 z-[1] h-full w-full object-contain opacity-0"
-            src={videoSeq2}
+            src={videoSrc2}
             muted
             playsInline
             preload="auto"
@@ -408,7 +440,7 @@ export function ScrollVideoSection({ id, onViewProducts }: ScrollVideoSectionPro
               style={{ letterSpacing: '0.06em', opacity: 0 }}
             >
               <ShinyText
-                text={COPY.seq1}
+                text={copy.seq1Title}
                 speed={3}
                 delay={1}
                 color={BRAND_CHAMPAGNE}
@@ -421,6 +453,27 @@ export function ScrollVideoSection({ id, onViewProducts }: ScrollVideoSectionPro
                 className="text-3xl font-medium tracking-[0.06em] sm:text-4xl md:text-5xl"
               />
             </p>
+            {copy.seq1Subtitle ? (
+              <p
+                ref={seq1SubRef}
+                className="max-w-2xl text-center text-sm font-medium leading-relaxed will-change-[filter,opacity,transform] sm:text-base"
+                style={{ letterSpacing: '0.04em', opacity: 0 }}
+              >
+                <ShinyText
+                  text={copy.seq1Subtitle}
+                  speed={3}
+                  delay={1}
+                  color={BRAND_CHAMPAGNE}
+                  shineColor={BRAND_CHAMPAGNE_SHINE}
+                  spread={150}
+                  direction="left"
+                  yoyo={false}
+                  pauseOnHover={false}
+                  disabled={false}
+                  className="text-sm sm:text-base"
+                />
+              </p>
+            ) : null}
           </div>
 
           <div
@@ -432,7 +485,7 @@ export function ScrollVideoSection({ id, onViewProducts }: ScrollVideoSectionPro
           >
             <span className="inline-flex items-center rounded-full border border-white/15 bg-black/50 px-4 py-2 shadow-lg backdrop-blur-md will-change-[filter,opacity,transform]">
               <ShinyText
-                text={COPY.scrollHint}
+                text={copy.scrollHint}
                 speed={3}
                 delay={1}
                 color={BRAND_CHAMPAGNE}
@@ -454,7 +507,7 @@ export function ScrollVideoSection({ id, onViewProducts }: ScrollVideoSectionPro
               style={{ letterSpacing: '0.06em', opacity: 0 }}
             >
               <ShinyText
-                text={COPY.seq2Main}
+                text={copy.seq2Title}
                 speed={3}
                 delay={1}
                 color={BRAND_CHAMPAGNE}
@@ -467,26 +520,27 @@ export function ScrollVideoSection({ id, onViewProducts }: ScrollVideoSectionPro
                 className="text-3xl font-medium tracking-[0.06em] sm:text-4xl md:text-5xl"
               />
             </h2>
-            <p
-              ref={seq2SubRef}
-              className="mx-auto mt-1 max-w-xl text-sm will-change-[filter,opacity,transform] sm:mt-2 sm:text-base"
-              style={{ opacity: 0 }}
-            >
-              <ShinyText
-                text={COPY.seq2Sub}
-                speed={3}
-                delay={1}
-                color={BRAND_CHAMPAGNE}
-                shineColor={BRAND_CHAMPAGNE_SHINE}
-                spread={150}
-                direction="left"
-                yoyo={false}
-                pauseOnHover={false}
-                disabled={false}
-                className="text-sm sm:text-base"
-              />
-            </p>
-
+            {copy.seq2Subtitle ? (
+              <p
+                ref={seq2SubRef}
+                className="mx-auto mt-1 max-w-xl text-sm will-change-[filter,opacity,transform] sm:mt-2 sm:text-base"
+                style={{ opacity: 0 }}
+              >
+                <ShinyText
+                  text={copy.seq2Subtitle}
+                  speed={3}
+                  delay={1}
+                  color={BRAND_CHAMPAGNE}
+                  shineColor={BRAND_CHAMPAGNE_SHINE}
+                  spread={150}
+                  direction="left"
+                  yoyo={false}
+                  pauseOnHover={false}
+                  disabled={false}
+                  className="text-sm sm:text-base"
+                />
+              </p>
+            ) : null}
             {onViewProducts ? (
               <div
                 ref={productsCtaRef}
@@ -499,7 +553,7 @@ export function ScrollVideoSection({ id, onViewProducts }: ScrollVideoSectionPro
                   className="pointer-events-auto w-full rounded-full border border-[#c9a882]/45 bg-black/40 px-6 py-3 text-sm font-medium tracking-wide backdrop-blur-sm transition-colors hover:bg-[#c9a882]/15 sm:text-base"
                   style={{ color: BRAND_CHAMPAGNE }}
                 >
-                  Ver todos los productos
+                  {copy.ctaLabel}
                 </button>
               </div>
             ) : null}

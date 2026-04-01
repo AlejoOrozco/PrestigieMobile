@@ -3,16 +3,33 @@ import { HeroSection } from '../components/features/hero/HeroSection'
 import { Header } from '../components/layout/Header'
 import { ScrollVideoSection } from '../components/ScrollVideoSection'
 import { BRAND_CHAMPAGNE } from '../constants/brandColors'
+import {
+  SCROLL_VIDEO_COPY_AIRPODS,
+  SCROLL_VIDEO_COPY_IPHONE,
+} from '../constants/scrollVideoCopy'
 import LightRays from '../components/ui/LightRays'
 
+import videoAirpods1 from '../video/secuences/Secuence1.mp4'
+import videoAirpods2 from '../video/secuences/Secuence2.mp4'
+import videoIphone1 from '../video/secuences/Iphone/Seecuence1iphone.mp4'
+import videoIphone2 from '../video/secuences/Iphone/Secuence2iphone.mp4'
+
 const AIRPODS_SCROLL_ID = 'airpods-scroll-experience'
+const IPHONE_SCROLL_ID = 'iphone-scroll-experience'
 
 type LandingPageProps = {
   onViewProducts?: () => void
+  onViewIphoneProducts?: () => void
+  onOpenProducts?: (category: 'airpods' | 'iphones') => void
 }
 
-export function LandingPage({ onViewProducts }: LandingPageProps) {
+export function LandingPage({
+  onViewProducts,
+  onViewIphoneProducts,
+  onOpenProducts,
+}: LandingPageProps) {
   const [airpodsScrollActive, setAirpodsScrollActive] = useState(false)
+  const [iphoneScrollActive, setIphoneScrollActive] = useState(false)
 
   useEffect(() => {
     if (!airpodsScrollActive) return
@@ -24,10 +41,18 @@ export function LandingPage({ onViewProducts }: LandingPageProps) {
     return () => clearTimeout(timer)
   }, [airpodsScrollActive])
 
+  useEffect(() => {
+    if (!iphoneScrollActive) return
+    const timer = setTimeout(() => {
+      document
+        .getElementById(IPHONE_SCROLL_ID)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [iphoneScrollActive])
+
   return (
     <div className="relative min-h-screen bg-black text-white">
-      {/* Light rays – sits behind everything but is a direct child so the
-          header's backdrop-filter can see through to it */}
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 z-0"
@@ -51,21 +76,44 @@ export function LandingPage({ onViewProducts }: LandingPageProps) {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_50%_0%,rgba(201,168,130,0.08),transparent_48%)]" />
       </div>
 
-      <Header className="sticky top-0 z-40" />
+      <Header
+        className="sticky top-0 z-40"
+        onOpenProductsAirPods={() => onOpenProducts?.('airpods')}
+        onOpenProductsiPhones={() => onOpenProducts?.('iphones')}
+      />
 
       <div className="relative z-10">
         <HeroSection
-          onExploreAirPods={() => setAirpodsScrollActive(true)}
+          onExploreAirPods={() => {
+            setIphoneScrollActive(false)
+            setAirpodsScrollActive(true)
+          }}
+          onExploreiPhones={() => {
+            setAirpodsScrollActive(false)
+            setIphoneScrollActive(true)
+          }}
         />
       </div>
 
-      {airpodsScrollActive && (
+      {airpodsScrollActive ? (
         <ScrollVideoSection
           id={AIRPODS_SCROLL_ID}
+          videoSrc1={videoAirpods1}
+          videoSrc2={videoAirpods2}
+          copy={SCROLL_VIDEO_COPY_AIRPODS}
           onViewProducts={onViewProducts}
         />
-      )}
+      ) : null}
+
+      {iphoneScrollActive ? (
+        <ScrollVideoSection
+          id={IPHONE_SCROLL_ID}
+          videoSrc1={videoIphone1}
+          videoSrc2={videoIphone2}
+          copy={SCROLL_VIDEO_COPY_IPHONE}
+          onViewProducts={onViewIphoneProducts}
+        />
+      ) : null}
     </div>
   )
 }
-

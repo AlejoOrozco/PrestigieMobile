@@ -1,3 +1,4 @@
+import { useCallback, useRef, useState } from 'react'
 import { BRAND_CHAMPAGNE } from '../../constants/brandColors'
 import { Container } from './Container'
 
@@ -6,16 +7,58 @@ type NavLink = { label: string; href: string }
 const links: NavLink[] = [
   { label: 'Inicio', href: '#' },
   { label: 'Nosotros', href: '#' },
-  { label: 'Productos', href: '#' },
   { label: 'Recursos', href: '#' },
   { label: 'Pagos', href: '#' },
 ]
 
 type HeaderProps = {
   className?: string
+  onOpenProductsAirPods?: () => void
+  onOpenProductsiPhones?: () => void
 }
 
-export function Header({ className }: HeaderProps) {
+const SUBMENU_LEAVE_MS = 160
+
+export function Header({
+  className,
+  onOpenProductsAirPods,
+  onOpenProductsiPhones,
+}: HeaderProps) {
+  const [productsOpen, setProductsOpen] = useState(false)
+  const leaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const clearLeaveTimer = useCallback(() => {
+    if (leaveTimerRef.current) {
+      clearTimeout(leaveTimerRef.current)
+      leaveTimerRef.current = null
+    }
+  }, [])
+
+  const openProductsMenu = useCallback(() => {
+    clearLeaveTimer()
+    setProductsOpen(true)
+  }, [clearLeaveTimer])
+
+  const scheduleCloseProductsMenu = useCallback(() => {
+    clearLeaveTimer()
+    leaveTimerRef.current = setTimeout(() => {
+      setProductsOpen(false)
+      leaveTimerRef.current = null
+    }, SUBMENU_LEAVE_MS)
+  }, [clearLeaveTimer])
+
+  const handleIphones = useCallback(() => {
+    clearLeaveTimer()
+    setProductsOpen(false)
+    onOpenProductsiPhones?.()
+  }, [clearLeaveTimer, onOpenProductsiPhones])
+
+  const handleAirPods = useCallback(() => {
+    clearLeaveTimer()
+    setProductsOpen(false)
+    onOpenProductsAirPods?.()
+  }, [clearLeaveTimer, onOpenProductsAirPods])
+
   return (
     <header
       className={[
@@ -42,6 +85,62 @@ export function Header({ className }: HeaderProps) {
           className="hidden items-center gap-8 text-sm md:flex"
           style={{ color: BRAND_CHAMPAGNE }}
         >
+          <a
+            href="#"
+            className="opacity-[0.88] transition-opacity hover:opacity-100"
+          >
+            Inicio
+          </a>
+          <a
+            href="#"
+            className="opacity-[0.88] transition-opacity hover:opacity-100"
+          >
+            Nosotros
+          </a>
+
+          <div
+            className="relative"
+            onMouseEnter={openProductsMenu}
+            onMouseLeave={scheduleCloseProductsMenu}
+          >
+            <button
+              type="button"
+              className="opacity-[0.88] transition-opacity hover:opacity-100"
+              aria-expanded={productsOpen}
+              aria-haspopup="menu"
+              aria-controls="header-productos-submenu"
+            >
+              Productos
+            </button>
+            {productsOpen ? (
+              <div
+                id="header-productos-submenu"
+                role="menu"
+                aria-label="Categorías de productos"
+                className="absolute left-1/2 top-full z-50 min-w-[10.5rem] -translate-x-1/2 pt-2"
+              >
+                <div className="overflow-hidden rounded-lg border border-white/[0.12] bg-black/90 py-1 shadow-[0_16px_48px_-12px_rgba(0,0,0,0.85)] backdrop-blur-xl">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-white/[0.06]"
+                    onClick={handleIphones}
+                  >
+                    iPhones
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-white/[0.06]"
+                    onClick={handleAirPods}
+                  >
+                    AirPods
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+
           {links.map((l) => (
             <a
               key={l.label}
@@ -66,4 +165,3 @@ export function Header({ className }: HeaderProps) {
     </header>
   )
 }
-

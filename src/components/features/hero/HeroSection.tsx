@@ -12,9 +12,13 @@ import logoSrc from '../../../assets/mock/pretigiemobilelogo.webp'
 
 type HeroSectionProps = {
   onExploreAirPods?: () => void
+  onExploreiPhones?: () => void
 }
 
-export function HeroSection({ onExploreAirPods }: HeroSectionProps) {
+export function HeroSection({
+  onExploreAirPods,
+  onExploreiPhones,
+}: HeroSectionProps) {
   return (
     <Section className="relative z-10 flex flex-col bg-transparent" style={{ minHeight: 'calc(100vh - 4.5rem)' }}>
       <Container className="relative flex min-h-0 flex-1 flex-col pt-6 pb-4 sm:pt-8 sm:pb-6">
@@ -87,6 +91,7 @@ export function HeroSection({ onExploreAirPods }: HeroSectionProps) {
               label="Explora iPhones"
               imageSrc={iphoneImg}
               imageAlt="Categoría iPhone"
+              onActivate={onExploreiPhones}
             />
             <CategoryCard
               label="Explora AirPods"
