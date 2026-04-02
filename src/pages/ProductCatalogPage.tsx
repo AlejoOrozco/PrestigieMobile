@@ -158,7 +158,7 @@ export function ProductCatalogPage({
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col">
         <Header
-          className="sticky top-0 shrink-0"
+          className="shrink-0"
           onInicio={onInicio}
           onOpenProductsAirPods={onOpenProductsAirPods}
           onOpenProductsiPhones={onOpenProductsiPhones}
