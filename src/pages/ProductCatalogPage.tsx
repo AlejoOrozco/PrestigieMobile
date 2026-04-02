@@ -33,9 +33,21 @@ function formatCOP(amount: number) {
   }).format(amount)
 }
 
-function whatsappUrlForProduct(deviceName: string) {
-  const phone = import.meta.env.WHATSAPP_PHONE_E164
-  const text = `Hola, me interesan los ${deviceName}, ¿me podrías dar más información por favor?`
+function whatsappPhoneDigits(): string | undefined {
+  const raw = import.meta.env.WHATSAPP_PHONE_E164
+  const digits = raw?.replace(/\D/g, '')
+  return digits && digits.length > 0 ? digits : undefined
+}
+
+function whatsappUrlForProduct(p: CatalogProduct): string {
+  const phone = whatsappPhoneDigits()
+  if (!phone) return '#'
+
+  const isIphone = p.category.trim().toLowerCase() === 'iphone'
+  const text = isIphone
+    ? `Hola, me interesa el ${p.name}, ¿me podrías dar más información por favor?`
+    : `Hola, me interesan los ${p.name}, ¿me podrías dar más información por favor?`
+
   return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
 }
 
@@ -216,7 +228,7 @@ export function ProductCatalogPage({
                         ))}
                       </ul>
                       <a
-                        href={whatsappUrlForProduct(p.name)}
+                        href={whatsappUrlForProduct(p)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="mt-2 block w-full rounded-lg border border-[#c9a882]/40 py-1.5 text-center text-[11px] font-medium transition-colors hover:bg-[#c9a882]/10 sm:text-xs"
