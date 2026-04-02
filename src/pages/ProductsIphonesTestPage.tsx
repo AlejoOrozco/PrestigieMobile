@@ -12,6 +12,7 @@ import {
 
 type ProductsIphonesTestPageProps = {
   onInicio: () => void
+  onRecursos: () => void
   onOpenProducts: (category: 'airpods' | 'iphones') => void
 }
 
@@ -80,11 +81,13 @@ const IPHONE_PRODUCTS: CatalogProduct[] = [
 
 export function ProductsIphonesTestPage({
   onInicio,
+  onRecursos,
   onOpenProducts,
 }: ProductsIphonesTestPageProps) {
   return (
     <ProductCatalogPage
       onInicio={onInicio}
+      onRecursos={onRecursos}
       onOpenProductsAirPods={() => onOpenProducts('airpods')}
       onOpenProductsiPhones={() => onOpenProducts('iphones')}
       products={IPHONE_PRODUCTS}

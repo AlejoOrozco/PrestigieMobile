@@ -61,7 +61,7 @@ export function LandingPage({
     (scrollPhase === 'seq1' || scrollPhase === 'seq2')
 
   return (
-    <div className="relative min-h-screen bg-black text-white">
+    <div className="relative min-h-[100dvh] bg-black text-white md:min-h-screen">
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 z-0"
@@ -88,10 +88,17 @@ export function LandingPage({
       <Header
         className={hideHeaderDuringVideo ? 'hidden' : 'sticky top-0'}
         onInicio={() =>
-          window.scrollTo({ top: 0, behavior: 'smooth' })
+          document
+            .getElementById('inicio')
+            ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
         }
         onOpenProductsAirPods={() => onOpenProducts?.('airpods')}
         onOpenProductsiPhones={() => onOpenProducts?.('iphones')}
+        onRecursos={() =>
+          document
+            .getElementById('recursos')
+            ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
       />
 
       <div className="relative z-10">

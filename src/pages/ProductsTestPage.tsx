@@ -16,6 +16,7 @@ import {
 
 type ProductsTestPageProps = {
   onInicio: () => void
+  onRecursos: () => void
   onOpenProducts: (category: 'airpods' | 'iphones') => void
 }
 
@@ -55,10 +56,15 @@ const AIRPODS_PRODUCTS: CatalogProduct[] = [
   },
 ]
 
-export function ProductsTestPage({ onInicio, onOpenProducts }: ProductsTestPageProps) {
+export function ProductsTestPage({
+  onInicio,
+  onRecursos,
+  onOpenProducts,
+}: ProductsTestPageProps) {
   return (
     <ProductCatalogPage
       onInicio={onInicio}
+      onRecursos={onRecursos}
       onOpenProductsAirPods={() => onOpenProducts('airpods')}
       onOpenProductsiPhones={() => onOpenProducts('iphones')}
       products={AIRPODS_PRODUCTS}

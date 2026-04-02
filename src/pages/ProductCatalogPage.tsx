@@ -22,6 +22,7 @@ export type ProductCatalogPageProps = {
   onInicio: () => void
   onOpenProductsAirPods: () => void
   onOpenProductsiPhones: () => void
+  onRecursos: () => void
   products: CatalogProduct[]
   heading: string
 }
@@ -35,9 +36,11 @@ function formatCOP(amount: number) {
 }
 
 function whatsappPhoneDigits(): string | undefined {
-  const raw = import.meta.env.WHATSAPP_PHONE_E164
-  const digits = raw?.replace(/\D/g, '')
-  return digits && digits.length > 0 ? digits : undefined
+  const raw = import.meta.env.WHATSAPP_PHONE_E164 ?? ''
+    .trim()
+    .replace(/^["']|["']$/g, '')
+  const digits = raw.replace(/\D/g, '')
+  return digits.length > 0 ? digits : undefined
 }
 
 function whatsappUrlForProduct(p: CatalogProduct): string {
@@ -128,6 +131,7 @@ export function ProductCatalogPage({
   onInicio,
   onOpenProductsAirPods,
   onOpenProductsiPhones,
+  onRecursos,
   products,
   heading,
 }: ProductCatalogPageProps) {
@@ -162,6 +166,7 @@ export function ProductCatalogPage({
           onInicio={onInicio}
           onOpenProductsAirPods={onOpenProductsAirPods}
           onOpenProductsiPhones={onOpenProductsiPhones}
+          onRecursos={onRecursos}
         />
 
         <main className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden px-4 pt-4 sm:px-6 sm:pt-5">

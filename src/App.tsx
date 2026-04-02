@@ -5,6 +5,15 @@ import { ProductsTestPage } from './pages/ProductsTestPage'
 
 type AppView = 'landing' | 'products-airpods' | 'products-iphones'
 
+function scrollToRecursosAfterNav() {
+  window.setTimeout(() => {
+    document.getElementById('recursos')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }, 150)
+}
+
 function App() {
   const [view, setView] = useState<AppView>('landing')
 
@@ -12,6 +21,10 @@ function App() {
     return (
       <ProductsTestPage
         onInicio={() => setView('landing')}
+        onRecursos={() => {
+          setView('landing')
+          scrollToRecursosAfterNav()
+        }}
         onOpenProducts={(category) =>
           setView(category === 'iphones' ? 'products-iphones' : 'products-airpods')
         }
@@ -23,6 +36,10 @@ function App() {
     return (
       <ProductsIphonesTestPage
         onInicio={() => setView('landing')}
+        onRecursos={() => {
+          setView('landing')
+          scrollToRecursosAfterNav()
+        }}
         onOpenProducts={(category) =>
           setView(category === 'iphones' ? 'products-iphones' : 'products-airpods')
         }

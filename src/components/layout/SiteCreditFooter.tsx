@@ -3,7 +3,15 @@ import { Container } from './Container'
 
 export function SiteCreditFooter() {
   return (
-    <footer className="relative shrink-0 border-t border-white/[0.06] py-6 sm:py-8">
+    <footer
+      id="recursos"
+      className={[
+        'relative shrink-0 scroll-mt-16 border-t border-white/[0.08] py-6 sm:py-8',
+        'bg-black/15 supports-[backdrop-filter]:bg-black/20',
+        'backdrop-blur-2xl backdrop-saturate-150',
+        'shadow-[0_-12px_40px_-18px_rgba(0,0,0,0.55)]',
+      ].join(' ')}
+    >
       <Container>
         <p className="text-center text-[11px] leading-relaxed text-white/45 sm:text-xs">
           Este sitio web fue creado por el equipo de{' '}
