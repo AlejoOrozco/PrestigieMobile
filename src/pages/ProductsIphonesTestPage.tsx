@@ -1,4 +1,9 @@
 import iphoneHero from '../assets/mock/Iphones4k.webp'
+import iphone12Img from '../assets/mock/products/Iphones/12/12_1.png'
+import iphone14Img from '../assets/mock/products/Iphones/14/14_1.png'
+import iphone14ProImg from '../assets/mock/products/Iphones/14 pro/14pro_1.png'
+import iphone14PlusImg from '../assets/mock/products/Iphones/14 plus/14plus_1.png'
+import iphone15ProImg from '../assets/mock/products/Iphones/15 pro/15pro_1.png'
 
 import {
   ProductCatalogPage,
@@ -6,7 +11,7 @@ import {
 } from './ProductCatalogPage'
 
 type ProductsIphonesTestPageProps = {
-  onBack: () => void
+  onInicio: () => void
   onOpenProducts: (category: 'airpods' | 'iphones') => void
 }
 
@@ -19,7 +24,7 @@ const IPHONE_PRODUCTS: CatalogProduct[] = [
     batteryPercent: 100,
     detail: 'Reacondicionado certificado, revisión de batería y garantía.',
     specs: ['128 GB'],
-    imageUrls: [iphoneHero],
+    imageUrls: [iphone12Img],
   },
   {
     id: 'iphone-14-128',
@@ -29,7 +34,7 @@ const IPHONE_PRODUCTS: CatalogProduct[] = [
     batteryPercent: 86,
     detail: 'Reacondicionado certificado, revisión de batería y garantía.',
     specs: ['128 GB'],
-    imageUrls: [iphoneHero],
+    imageUrls: [iphone14Img],
   },
   {
     id: 'iphone-14-pro-256',
@@ -39,7 +44,7 @@ const IPHONE_PRODUCTS: CatalogProduct[] = [
     batteryPercent: 88,
     detail: 'Reacondicionado certificado, revisión de batería y garantía.',
     specs: ['256 GB'],
-    imageUrls: [iphoneHero],
+    imageUrls: [iphone14ProImg],
   },
   {
     id: 'iphone-14-pro-max-128',
@@ -59,7 +64,7 @@ const IPHONE_PRODUCTS: CatalogProduct[] = [
     batteryPercent: 100,
     detail: 'Reacondicionado certificado, revisión de batería y garantía.',
     specs: ['128 GB'],
-    imageUrls: [iphoneHero],
+    imageUrls: [iphone14PlusImg],
   },
   {
     id: 'iphone-15-pro-128',
@@ -69,17 +74,17 @@ const IPHONE_PRODUCTS: CatalogProduct[] = [
     batteryPercent: 86,
     detail: 'Reacondicionado certificado, revisión de batería y garantía.',
     specs: ['128 GB'],
-    imageUrls: [iphoneHero],
+    imageUrls: [iphone15ProImg],
   },
 ]
 
 export function ProductsIphonesTestPage({
-  onBack,
+  onInicio,
   onOpenProducts,
 }: ProductsIphonesTestPageProps) {
   return (
     <ProductCatalogPage
-      onBack={onBack}
+      onInicio={onInicio}
       onOpenProductsAirPods={() => onOpenProducts('airpods')}
       onOpenProductsiPhones={() => onOpenProducts('iphones')}
       products={IPHONE_PRODUCTS}

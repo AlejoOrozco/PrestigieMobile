@@ -86,6 +86,9 @@ export function LandingPage({
 
       <Header
         className={hideHeaderDuringVideo ? 'hidden' : 'sticky top-0 z-40'}
+        onInicio={() =>
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        }
         onOpenProductsAirPods={() => onOpenProducts?.('airpods')}
         onOpenProductsiPhones={() => onOpenProducts?.('iphones')}
       />

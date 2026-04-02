@@ -11,7 +11,7 @@ function App() {
   if (view === 'products-airpods') {
     return (
       <ProductsTestPage
-        onBack={() => setView('landing')}
+        onInicio={() => setView('landing')}
         onOpenProducts={(category) =>
           setView(category === 'iphones' ? 'products-iphones' : 'products-airpods')
         }
@@ -22,7 +22,7 @@ function App() {
   if (view === 'products-iphones') {
     return (
       <ProductsIphonesTestPage
-        onBack={() => setView('landing')}
+        onInicio={() => setView('landing')}
         onOpenProducts={(category) =>
           setView(category === 'iphones' ? 'products-iphones' : 'products-airpods')
         }

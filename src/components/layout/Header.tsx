@@ -4,8 +4,8 @@ import { Container } from './Container'
 
 type HeaderProps = {
   className?: string
-  /** En catálogo / subvistas: volver al inicio. */
-  onBack?: () => void
+  /** Ir al inicio (landing: scroll arriba; catálogo: volver a la landing). */
+  onInicio?: () => void
   onOpenProductsAirPods?: () => void
   onOpenProductsiPhones?: () => void
 }
@@ -14,7 +14,7 @@ const SUBMENU_LEAVE_MS = 160
 
 export function Header({
   className,
-  onBack,
+  onInicio,
   onOpenProductsAirPods,
   onOpenProductsiPhones,
 }: HeaderProps) {
@@ -67,16 +67,6 @@ export function Header({
     >
       <Container className="relative flex h-18 items-center justify-between sm:h-22">
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-          {onBack ? (
-            <button
-              type="button"
-              onClick={onBack}
-              className="shrink-0 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors hover:bg-white/5 sm:px-3 sm:text-sm"
-              style={{ color: BRAND_CHAMPAGNE }}
-            >
-              ← Volver
-            </button>
-          ) : null}
           <span
             className="truncate text-sm font-medium tracking-wide sm:text-base"
             style={{ color: BRAND_CHAMPAGNE }}
@@ -89,12 +79,22 @@ export function Header({
           className="hidden items-center gap-8 text-sm md:flex"
           style={{ color: BRAND_CHAMPAGNE }}
         >
-          <a
-            href="#"
-            className="opacity-[0.88] transition-opacity hover:opacity-100"
-          >
-            Inicio
-          </a>
+          {onInicio ? (
+            <button
+              type="button"
+              onClick={onInicio}
+              className="opacity-[0.88] transition-opacity hover:opacity-100"
+            >
+              Inicio
+            </button>
+          ) : (
+            <a
+              href="#"
+              className="opacity-[0.88] transition-opacity hover:opacity-100"
+            >
+              Inicio
+            </a>
+          )}
 
           <div
             className="relative"
