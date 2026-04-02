@@ -61,6 +61,8 @@ export function Header({
         'backdrop-blur-2xl backdrop-saturate-150',
         'shadow-[0_12px_40px_-18px_rgba(0,0,0,0.65)]',
         className,
+        /* Después de className: por encima de hero, vídeo scroll y footer (z-10). */
+        'z-50',
       ]
         .filter(Boolean)
         .join(' ')}

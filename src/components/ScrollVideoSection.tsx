@@ -407,7 +407,7 @@ export function ScrollVideoSection({
       className="relative bg-black"
       style={{ height: `${SCROLL_SECTION_HEIGHT_VH}vh` }}
     >
-      <div className="sticky top-0 flex h-screen w-full items-center justify-center bg-black">
+      <div className="sticky top-0 z-30 flex h-screen w-full items-center justify-center bg-black">
         <div className="relative h-full w-full overflow-x-hidden overflow-y-visible">
           {/* Solo el plano de vídeo se recorta; el texto queda fuera para no cortar ascendentes/descendentes */}
           <div className="absolute inset-0 overflow-hidden">

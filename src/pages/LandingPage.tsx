@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { HeroSection } from '../components/features/hero/HeroSection'
 import { Header } from '../components/layout/Header'
+import { SiteCreditFooter } from '../components/layout/SiteCreditFooter'
 import {
   ScrollVideoSection,
   type ScrollVideoPhase,
@@ -85,7 +86,7 @@ export function LandingPage({
       </div>
 
       <Header
-        className={hideHeaderDuringVideo ? 'hidden' : 'sticky top-0 z-40'}
+        className={hideHeaderDuringVideo ? 'hidden' : 'sticky top-0'}
         onInicio={() =>
           window.scrollTo({ top: 0, behavior: 'smooth' })
         }
@@ -129,6 +130,8 @@ export function LandingPage({
           onPhaseChange={setScrollPhase}
         />
       ) : null}
+
+      <SiteCreditFooter />
     </div>
   )
 }

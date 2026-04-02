@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion, type Variants } from 'motion/react'
 import { Container } from '../components/layout/Container'
 import { Header } from '../components/layout/Header'
+import { SiteCreditFooter } from '../components/layout/SiteCreditFooter'
 import LightRays from '../components/ui/LightRays'
 import { BRAND_CHAMPAGNE } from '../constants/brandColors'
 
@@ -157,7 +158,7 @@ export function ProductCatalogPage({
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col">
         <Header
-          className="sticky top-0 z-40 shrink-0"
+          className="sticky top-0 shrink-0"
           onInicio={onInicio}
           onOpenProductsAirPods={onOpenProductsAirPods}
           onOpenProductsiPhones={onOpenProductsiPhones}
@@ -244,6 +245,7 @@ export function ProductCatalogPage({
             </motion.ul>
           </Container>
         </main>
+        <SiteCreditFooter />
       </div>
     </div>
   )
