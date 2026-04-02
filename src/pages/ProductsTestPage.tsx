@@ -29,6 +29,7 @@ const AIRPODS_PRODUCTS: CatalogProduct[] = [
       'Audio espacial, resistencia al agua y ajuste cómodo. Certificados y revisados.',
     specs: ['Bluetooth 5.0', 'Estuche Lightning', 'Hasta 30 h con estuche'],
     imageUrls: [serie3_main, serie3_1, serie3_2],
+    priceShowDesde: true,
   },
   {
     id: 'pro-3',
@@ -39,6 +40,7 @@ const AIRPODS_PRODUCTS: CatalogProduct[] = [
       'Cancelación activa de ruido, audio espacial y estuche MagSafe. Listos para el día a día.',
     specs: ['USB-C', 'ANC', 'Audio espacial'],
     imageUrls: [pro3Main, pro3_1, pro3_sizes],
+    priceShowDesde: true,
   },
   {
     id: 'max',
@@ -49,6 +51,7 @@ const AIRPODS_PRODUCTS: CatalogProduct[] = [
       'Sonido envolvente, ANC de diadema y modo transparencia. Experiencia premium.',
     specs: ['Chip Apple', 'Spatial Audio', 'Smart Case'],
     imageUrls: [max_1, max_2],
+    priceShowDesde: true,
   },
 ]
 

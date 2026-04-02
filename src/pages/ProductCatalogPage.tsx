@@ -12,6 +12,8 @@ export type CatalogProduct = {
   detail: string
   specs: string[]
   imageUrls: string[]
+  batteryPercent?: number
+  priceShowDesde?: boolean
 }
 
 export type ProductCatalogPageProps = {
@@ -19,7 +21,6 @@ export type ProductCatalogPageProps = {
   onOpenProductsAirPods: () => void
   onOpenProductsiPhones: () => void
   products: CatalogProduct[]
-  /** Título principal bajo el header (ej. AirPods, iPhones). */
   heading: string
 }
 
@@ -163,7 +164,9 @@ export function ProductCatalogPage({
                         {p.category}
                       </span>
                       <span className="text-right text-[11px] font-semibold tabular-nums text-white sm:text-xs">
-                        Desde {formatCOP(p.priceCop)}
+                        {p.priceShowDesde
+                          ? `Desde ${formatCOP(p.priceCop)}`
+                          : formatCOP(p.priceCop)}
                       </span>
                     </div>
                     <h2 className="text-xs font-semibold leading-snug text-white sm:text-sm">
@@ -173,6 +176,11 @@ export function ProductCatalogPage({
                       {p.detail}
                     </p>
                     <ul className="mt-2 flex flex-wrap gap-1.5">
+                      {p.batteryPercent != null ? (
+                        <li className="rounded border border-white/10 bg-black/30 px-1.5 py-0.5 text-[9px] text-white/85 sm:text-[10px]">
+                          🔋{p.batteryPercent}%
+                        </li>
+                      ) : null}
                       {p.specs.map((s) => (
                         <li
                           key={s}
