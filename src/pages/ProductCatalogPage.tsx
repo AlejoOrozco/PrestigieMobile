@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion, type Variants } from 'motion/react'
 import { Container } from '../components/layout/Container'
+import { Header } from '../components/layout/Header'
 import { BRAND_CHAMPAGNE } from '../constants/brandColors'
 
 export type CatalogProduct = {
@@ -15,6 +16,8 @@ export type CatalogProduct = {
 
 export type ProductCatalogPageProps = {
   onBack: () => void
+  onOpenProductsAirPods: () => void
+  onOpenProductsiPhones: () => void
   products: CatalogProduct[]
   /** Título principal bajo el header (ej. AirPods, iPhones). */
   heading: string
@@ -108,30 +111,19 @@ function ProductCardImages({
 
 export function ProductCatalogPage({
   onBack,
+  onOpenProductsAirPods,
+  onOpenProductsiPhones,
   products,
   heading,
 }: ProductCatalogPageProps) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-black text-white">
-      <header className="shrink-0 border-b border-white/[0.08] bg-black/40 backdrop-blur-xl">
-        <Container className="flex h-14 items-center justify-between sm:h-16">
-          <button
-            type="button"
-            onClick={onBack}
-            className="rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-white/5"
-            style={{ color: BRAND_CHAMPAGNE }}
-          >
-            ← Volver
-          </button>
-          <span
-            className="text-sm font-medium tracking-wide sm:text-base"
-            style={{ color: BRAND_CHAMPAGNE }}
-          >
-            Pretigie Mobile
-          </span>
-          <span className="w-16 sm:w-20" aria-hidden />
-        </Container>
-      </header>
+      <Header
+        className="sticky top-0 z-40 shrink-0 border-b border-white/[0.08] bg-black/40 backdrop-blur-xl supports-[backdrop-filter]:bg-black/25"
+        onBack={onBack}
+        onOpenProductsAirPods={onOpenProductsAirPods}
+        onOpenProductsiPhones={onOpenProductsiPhones}
+      />
 
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden px-4 pt-4 sm:px-6 sm:pt-5">
         <Container className="pb-6">

@@ -32,7 +32,7 @@ function applyPlaybackTail(video: HTMLVideoElement) {
   video.playbackRate = Math.max(TAIL_MIN_RATE, eased)
 }
 
-type Phase = 'seq1' | 'seq1_post' | 'seq2' | 'seq2_post'
+export type ScrollVideoPhase = 'seq1' | 'seq1_post' | 'seq2' | 'seq2_post'
 
 export type ScrollVideoSectionProps = {
   id?: string
@@ -40,6 +40,8 @@ export type ScrollVideoSectionProps = {
   videoSrc2: string
   copy: ScrollVideoCopy
   onViewProducts?: () => void
+  /** Para ocultar el header mientras se reproduce el clip 1 o 2. */
+  onPhaseChange?: (phase: ScrollVideoPhase) => void
 }
 
 export function ScrollVideoSection({
@@ -48,6 +50,7 @@ export function ScrollVideoSection({
   videoSrc2,
   copy,
   onViewProducts,
+  onPhaseChange,
 }: ScrollVideoSectionProps) {
   const containerRef = useRef<HTMLElement>(null)
   const video1Ref = useRef<HTMLVideoElement>(null)
@@ -60,12 +63,16 @@ export function ScrollVideoSection({
   const productsCtaRef = useRef<HTMLDivElement>(null)
   const dimOverlayRef = useRef<HTMLDivElement>(null)
 
-  const [phase, setPhase] = useState<Phase>('seq1')
-  const phaseRef = useRef<Phase>('seq1')
+  const [phase, setPhase] = useState<ScrollVideoPhase>('seq1')
+  const phaseRef = useRef<ScrollVideoPhase>('seq1')
 
   useEffect(() => {
     phaseRef.current = phase
   }, [phase])
+
+  useEffect(() => {
+    onPhaseChange?.(phase)
+  }, [phase, onPhaseChange])
 
   const playback1StartedRef = useRef(false)
   const seq2StartedRef = useRef(false)
@@ -401,30 +408,33 @@ export function ScrollVideoSection({
       style={{ height: `${SCROLL_SECTION_HEIGHT_VH}vh` }}
     >
       <div className="sticky top-0 flex h-screen w-full items-center justify-center bg-black">
-        <div className="relative h-full w-full overflow-hidden">
-          <div className="scroll-video-glow" aria-hidden />
+        <div className="relative h-full w-full overflow-x-hidden overflow-y-visible">
+          {/* Solo el plano de vídeo se recorta; el texto queda fuera para no cortar ascendentes/descendentes */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="scroll-video-glow" aria-hidden />
 
-          <video
-            ref={video1Ref}
-            key={videoSrc1}
-            className="absolute inset-0 z-[1] h-full w-full object-contain"
-            src={videoSrc1}
-            muted
-            playsInline
-            preload="auto"
-            autoPlay={false}
-          />
+            <video
+              ref={video1Ref}
+              key={videoSrc1}
+              className="absolute inset-0 z-[1] h-full w-full object-contain"
+              src={videoSrc1}
+              muted
+              playsInline
+              preload="auto"
+              autoPlay={false}
+            />
 
-          <video
-            ref={video2Ref}
-            key={videoSrc2}
-            className="absolute inset-0 z-[1] h-full w-full object-contain opacity-0"
-            src={videoSrc2}
-            muted
-            playsInline
-            preload="auto"
-            autoPlay={false}
-          />
+            <video
+              ref={video2Ref}
+              key={videoSrc2}
+              className="absolute inset-0 z-[1] h-full w-full object-contain opacity-0"
+              src={videoSrc2}
+              muted
+              playsInline
+              preload="auto"
+              autoPlay={false}
+            />
+          </div>
 
           <div
             ref={dimOverlayRef}
@@ -433,10 +443,10 @@ export function ScrollVideoSection({
             aria-hidden
           />
 
-          <div className="pointer-events-none absolute inset-0 z-[3] flex flex-col items-center justify-center gap-3 px-6">
+          <div className="pointer-events-none absolute inset-0 z-[3] flex flex-col items-center justify-center gap-3 overflow-visible px-6 py-4">
             <p
               ref={text1Ref}
-              className="max-w-4xl text-center text-3xl font-medium tracking-wide will-change-[filter,opacity,transform] sm:text-4xl md:text-5xl"
+              className="max-w-4xl text-center text-3xl font-medium leading-[1.25] tracking-wide will-change-[filter,opacity,transform] sm:text-4xl sm:leading-[1.28] md:text-5xl md:leading-[1.3]"
               style={{ letterSpacing: '0.06em', opacity: 0 }}
             >
               <ShinyText
@@ -456,7 +466,7 @@ export function ScrollVideoSection({
             {copy.seq1Subtitle ? (
               <p
                 ref={seq1SubRef}
-                className="max-w-2xl text-center text-sm font-medium leading-relaxed will-change-[filter,opacity,transform] sm:text-base"
+                className="max-w-2xl text-center text-sm font-medium leading-relaxed will-change-[filter,opacity,transform] sm:text-base sm:leading-relaxed"
                 style={{ letterSpacing: '0.04em', opacity: 0 }}
               >
                 <ShinyText
@@ -500,10 +510,10 @@ export function ScrollVideoSection({
             </span>
           </div>
 
-          <div className="pointer-events-none absolute inset-0 z-[3] flex flex-col items-center justify-center gap-2 px-6 text-center">
+          <div className="pointer-events-none absolute inset-0 z-[3] flex flex-col items-center justify-center gap-2 overflow-visible px-6 py-6 text-center">
             <h2
               ref={seq2MainRef}
-              className="max-w-4xl text-3xl font-medium tracking-wide will-change-[filter,opacity,transform] sm:text-4xl md:text-5xl"
+              className="max-w-4xl text-3xl font-medium leading-[1.28] tracking-wide will-change-[filter,opacity,transform] sm:text-4xl sm:leading-[1.3] md:text-5xl md:leading-[1.32]"
               style={{ letterSpacing: '0.06em', opacity: 0 }}
             >
               <ShinyText

@@ -7,6 +7,7 @@ import {
 
 type ProductsIphonesTestPageProps = {
   onBack: () => void
+  onOpenProducts: (category: 'airpods' | 'iphones') => void
 }
 
 /** Catálogo de prueba: mismas imágenes mock hasta tener carpeta por modelo. */
@@ -43,10 +44,15 @@ const IPHONE_PRODUCTS: CatalogProduct[] = [
   },
 ]
 
-export function ProductsIphonesTestPage({ onBack }: ProductsIphonesTestPageProps) {
+export function ProductsIphonesTestPage({
+  onBack,
+  onOpenProducts,
+}: ProductsIphonesTestPageProps) {
   return (
     <ProductCatalogPage
       onBack={onBack}
+      onOpenProductsAirPods={() => onOpenProducts('airpods')}
+      onOpenProductsiPhones={() => onOpenProducts('iphones')}
       products={IPHONE_PRODUCTS}
       heading="iPhones"
     />

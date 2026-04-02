@@ -9,11 +9,25 @@ function App() {
   const [view, setView] = useState<AppView>('landing')
 
   if (view === 'products-airpods') {
-    return <ProductsTestPage onBack={() => setView('landing')} />
+    return (
+      <ProductsTestPage
+        onBack={() => setView('landing')}
+        onOpenProducts={(category) =>
+          setView(category === 'iphones' ? 'products-iphones' : 'products-airpods')
+        }
+      />
+    )
   }
 
   if (view === 'products-iphones') {
-    return <ProductsIphonesTestPage onBack={() => setView('landing')} />
+    return (
+      <ProductsIphonesTestPage
+        onBack={() => setView('landing')}
+        onOpenProducts={(category) =>
+          setView(category === 'iphones' ? 'products-iphones' : 'products-airpods')
+        }
+      />
+    )
   }
 
   return (

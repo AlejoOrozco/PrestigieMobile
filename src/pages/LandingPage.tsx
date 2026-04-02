@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import { HeroSection } from '../components/features/hero/HeroSection'
 import { Header } from '../components/layout/Header'
-import { ScrollVideoSection } from '../components/ScrollVideoSection'
+import {
+  ScrollVideoSection,
+  type ScrollVideoPhase,
+} from '../components/ScrollVideoSection'
 import { BRAND_CHAMPAGNE } from '../constants/brandColors'
 import {
   SCROLL_VIDEO_COPY_AIRPODS,
@@ -30,6 +33,7 @@ export function LandingPage({
 }: LandingPageProps) {
   const [airpodsScrollActive, setAirpodsScrollActive] = useState(false)
   const [iphoneScrollActive, setIphoneScrollActive] = useState(false)
+  const [scrollPhase, setScrollPhase] = useState<ScrollVideoPhase | null>(null)
 
   useEffect(() => {
     if (!airpodsScrollActive) return
@@ -50,6 +54,10 @@ export function LandingPage({
     }, 100)
     return () => clearTimeout(timer)
   }, [iphoneScrollActive])
+
+  const hideHeaderDuringVideo =
+    (airpodsScrollActive || iphoneScrollActive) &&
+    (scrollPhase === 'seq1' || scrollPhase === 'seq2')
 
   return (
     <div className="relative min-h-screen bg-black text-white">
@@ -77,7 +85,7 @@ export function LandingPage({
       </div>
 
       <Header
-        className="sticky top-0 z-40"
+        className={hideHeaderDuringVideo ? 'hidden' : 'sticky top-0 z-40'}
         onOpenProductsAirPods={() => onOpenProducts?.('airpods')}
         onOpenProductsiPhones={() => onOpenProducts?.('iphones')}
       />
@@ -87,10 +95,12 @@ export function LandingPage({
           onExploreAirPods={() => {
             setIphoneScrollActive(false)
             setAirpodsScrollActive(true)
+            setScrollPhase('seq1')
           }}
           onExploreiPhones={() => {
             setAirpodsScrollActive(false)
             setIphoneScrollActive(true)
+            setScrollPhase('seq1')
           }}
         />
       </div>
@@ -102,6 +112,7 @@ export function LandingPage({
           videoSrc2={videoAirpods2}
           copy={SCROLL_VIDEO_COPY_AIRPODS}
           onViewProducts={onViewProducts}
+          onPhaseChange={setScrollPhase}
         />
       ) : null}
 
@@ -112,6 +123,7 @@ export function LandingPage({
           videoSrc2={videoIphone2}
           copy={SCROLL_VIDEO_COPY_IPHONE}
           onViewProducts={onViewIphoneProducts}
+          onPhaseChange={setScrollPhase}
         />
       ) : null}
     </div>

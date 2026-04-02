@@ -2,17 +2,10 @@ import { useCallback, useRef, useState } from 'react'
 import { BRAND_CHAMPAGNE } from '../../constants/brandColors'
 import { Container } from './Container'
 
-type NavLink = { label: string; href: string }
-
-const links: NavLink[] = [
-  { label: 'Inicio', href: '#' },
-  { label: 'Nosotros', href: '#' },
-  { label: 'Recursos', href: '#' },
-  { label: 'Pagos', href: '#' },
-]
-
 type HeaderProps = {
   className?: string
+  /** En catálogo / subvistas: volver al inicio. */
+  onBack?: () => void
   onOpenProductsAirPods?: () => void
   onOpenProductsiPhones?: () => void
 }
@@ -21,6 +14,7 @@ const SUBMENU_LEAVE_MS = 160
 
 export function Header({
   className,
+  onBack,
   onOpenProductsAirPods,
   onOpenProductsiPhones,
 }: HeaderProps) {
@@ -72,9 +66,19 @@ export function Header({
         .join(' ')}
     >
       <Container className="relative flex h-18 items-center justify-between sm:h-22">
-        <div className="flex items-center">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          {onBack ? (
+            <button
+              type="button"
+              onClick={onBack}
+              className="shrink-0 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors hover:bg-white/5 sm:px-3 sm:text-sm"
+              style={{ color: BRAND_CHAMPAGNE }}
+            >
+              ← Volver
+            </button>
+          ) : null}
           <span
-            className="text-sm font-medium tracking-wide sm:text-base"
+            className="truncate text-sm font-medium tracking-wide sm:text-base"
             style={{ color: BRAND_CHAMPAGNE }}
           >
             Pretigie Mobile
@@ -90,12 +94,6 @@ export function Header({
             className="opacity-[0.88] transition-opacity hover:opacity-100"
           >
             Inicio
-          </a>
-          <a
-            href="#"
-            className="opacity-[0.88] transition-opacity hover:opacity-100"
-          >
-            Nosotros
           </a>
 
           <div
@@ -141,26 +139,15 @@ export function Header({
             ) : null}
           </div>
 
-          {links.map((l) => (
-            <a
-              key={l.label}
-              href={l.href}
-              className="opacity-[0.88] transition-opacity hover:opacity-100"
-            >
-              {l.label}
-            </a>
-          ))}
-        </nav>
-
-        <div className="flex items-center gap-4 text-sm">
           <a
             href="#"
-            className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-white/5"
-            style={{ color: BRAND_CHAMPAGNE }}
+            className="opacity-[0.88] transition-opacity hover:opacity-100"
           >
-            Contacto
+            Recursos
           </a>
-        </div>
+        </nav>
+
+        <span className="hidden w-16 shrink-0 sm:block sm:w-20" aria-hidden />
       </Container>
     </header>
   )
