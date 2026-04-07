@@ -80,7 +80,7 @@ export function HeroSection({
               </motion.div>
             </h1>
             <BlurText
-              text="iPhones reacondicionados y certificados. AirPods de alta calidad."
+              text="iPhones usados y certificados. AirPods de alta calidad."
               delay={130}
               animateBy="words"
               direction="top"
