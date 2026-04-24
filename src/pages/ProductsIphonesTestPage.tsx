@@ -116,7 +116,7 @@ const IPHONE_PRODUCTS: CatalogProduct[] = Array.from(productsByModel.entries()).
       category: 'iPhone',
       priceCop: null,
       batteryPercent,
-      detail: `${toTitleCase(product.sourceName)}. Equipo reacondicionado con pruebas completas y excelente rendimiento.`,
+      detail: `${toTitleCase(product.sourceName)}. Equipo con pruebas completas y excelente rendimiento.`,
       specs: [storage, `Color ${product.color}`],
       imageUrls: product.imageUrls,
       model: product.modelLabel,
