@@ -6,7 +6,6 @@ import type { ScrollVideoCopy } from '../constants/scrollVideoCopy'
 import ShinyText from './ui/ShinyText'
 import './ScrollVideoSection.css'
 
-const SCROLL_SECTION_HEIGHT_VH = 260
 const DIM_OVERLAY_MAX = 0.52
 
 const TEXT_BLUR_IN = 'blur(14px)'
@@ -78,6 +77,8 @@ export function ScrollVideoSection({
 
   const playback1StartedRef = useRef(false)
   const seq2StartedRef = useRef(false)
+  const seq1EndedRef = useRef(false)
+  const seq2EndedRef = useRef(false)
   const touchStartYRef = useRef<number | null>(null)
 
   const isSectionVisiblyOnScreen = useCallback(() => {
@@ -91,6 +92,7 @@ export function ScrollVideoSection({
   const tryPlaySeq1 = useCallback(() => {
     const video = video1Ref.current
     if (!video || playback1StartedRef.current) return
+    if (phaseRef.current !== 'seq1' || seq1EndedRef.current) return
     if (!Number.isFinite(video.duration) || video.duration <= 0) return
     if (!isSectionVisiblyOnScreen()) return
 
@@ -131,7 +133,10 @@ export function ScrollVideoSection({
 
     const onSeq1Ended = () => {
       if (phaseRef.current !== 'seq1') return
+      if (seq1EndedRef.current) return
+      seq1EndedRef.current = true
       video.playbackRate = 1
+      video.pause()
       setPhase('seq1_post')
       gsap.to(dim, { opacity: DIM_OVERLAY_MAX, duration: 1, ease: 'power2.out' })
       gsap.fromTo(
@@ -273,8 +278,13 @@ export function ScrollVideoSection({
 
   const onSeq2Ended = useCallback(() => {
     if (phaseRef.current !== 'seq2') return
+    if (seq2EndedRef.current) return
+    seq2EndedRef.current = true
     const v2 = video2Ref.current
-    if (v2) v2.playbackRate = 1
+    if (v2) {
+      v2.playbackRate = 1
+      v2.pause()
+    }
     const main2 = seq2MainRef.current
     const sub2 = seq2SubRef.current
     const dim = dimOverlayRef.current
@@ -406,8 +416,7 @@ export function ScrollVideoSection({
     <section
       id={id}
       ref={containerRef}
-      className="relative bg-black"
-      style={{ height: `${SCROLL_SECTION_HEIGHT_VH}vh` }}
+      className="relative min-h-[100svh] bg-black supports-[min-height:100dvh]:min-h-[100dvh]"
     >
       <div className="sticky top-0 z-30 relative flex h-[100svh] min-h-0 w-full flex-col bg-black supports-[height:100dvh]:h-[100dvh] md:h-[100dvh]">
         {/* Video + dim: full stage; out of flex flow */}

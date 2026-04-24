@@ -58,8 +58,7 @@ export function LandingPage({
   }, [iphoneScrollActive])
 
   const hideHeaderDuringVideo =
-    (airpodsScrollActive || iphoneScrollActive) &&
-    (scrollPhase === 'seq1' || scrollPhase === 'seq2')
+    (airpodsScrollActive || iphoneScrollActive) && scrollPhase !== null
 
   const goToIphoneProducts = () => onOpenProducts?.('iphones')
 
