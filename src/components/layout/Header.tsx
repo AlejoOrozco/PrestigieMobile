@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { BRAND_CHAMPAGNE } from '../../constants/brandColors'
 import { Container } from './Container'
 
@@ -213,10 +214,10 @@ export function Header({
         <div className="flex shrink-0 items-center gap-2 md:contents">
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#c9a882]/30 bg-white/[0.06] shadow-[0_8px_28px_-18px_rgba(201,168,130,0.35)] backdrop-blur-md backdrop-saturate-150 md:hidden"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#c9a882]/25 bg-white/[0.03] shadow-[0_16px_48px_-32px_rgba(201,168,130,0.35)] backdrop-blur-sm backdrop-saturate-150 transition-colors hover:border-[#c9a882]/45 hover:bg-white/[0.06] supports-[backdrop-filter]:bg-white/[0.05] md:hidden"
             style={{ color: BRAND_CHAMPAGNE }}
             aria-expanded={mobileMenuOpen}
-            aria-controls="header-mobile-menu"
+            aria-controls="header-mobile-menu-panel"
             aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
             onClick={() => setMobileMenuOpen((o) => !o)}
           >
@@ -236,104 +237,111 @@ export function Header({
         </div>
       </Container>
 
-      {mobileMenuOpen ? (
-        <div
-          id="header-mobile-menu"
-          className={[
-            'fixed inset-0 top-14 z-[100] flex flex-col sm:top-16 md:hidden',
-            'border-t border-white/[0.08]',
-            'bg-black/50 supports-[backdrop-filter]:bg-black/30',
-            'backdrop-blur-2xl backdrop-saturate-150',
-            'shadow-[0_12px_40px_-18px_rgba(0,0,0,0.65)]',
-          ].join(' ')}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Menú de navegación"
-          onClick={closeMobileMenu}
-        >
-          <button
-            type="button"
-            className="absolute right-4 top-3 z-[1] rounded-lg px-3 py-2 text-sm text-white/70"
-            onClick={(e) => {
-              e.stopPropagation()
-              closeMobileMenu()
-            }}
-          >
-            Cerrar
-          </button>
-          <nav
-            className="flex flex-1 flex-col gap-1 px-6 pb-8 pt-14 text-base"
-            style={{ color: BRAND_CHAMPAGNE }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {onInicio ? (
-              <button
-                type="button"
-                className="rounded-lg py-3 text-left font-medium"
-                onClick={goInicio}
-              >
-                Inicio
-              </button>
-            ) : (
-              <a
-                href="#inicio"
-                className="rounded-lg py-3 font-medium"
+      {mobileMenuOpen && typeof document !== 'undefined'
+        ? createPortal(
+            <>
+              <div
+                id="header-mobile-menu-backdrop"
+                className="fixed inset-0 z-[200] bg-black/60 md:hidden"
+                role="presentation"
+                aria-hidden="true"
                 onClick={closeMobileMenu}
+              />
+              <div
+                id="header-mobile-menu-panel"
+                className={[
+                  'fixed left-3 right-3 top-14 z-[210] flex flex-col overflow-hidden rounded-xl border border-[#c9a882]/25 bg-white/[0.03] p-3 shadow-[0_16px_48px_-32px_rgba(201,168,130,0.35)] backdrop-blur-sm sm:left-4 sm:right-4 sm:top-16 md:hidden',
+                ].join(' ')}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Menú de navegación"
               >
-                Inicio
-              </a>
-            )}
+                <button
+                  type="button"
+                  className="absolute right-3 top-3 z-[1] rounded-xl border border-[#c9a882]/25 bg-white/[0.03] px-3 py-2 text-sm text-white/90 shadow-[0_16px_48px_-32px_rgba(201,168,130,0.35)] backdrop-blur-sm transition-colors hover:border-[#c9a882]/45 sm:right-4 sm:top-4"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    closeMobileMenu()
+                  }}
+                >
+                  Cerrar
+                </button>
+                <nav
+                  className="relative z-[2] mt-12 flex max-h-[calc(100dvh-5.5rem)] flex-col gap-1 overflow-y-auto px-1 pb-2 pt-2 text-base sm:mt-14 sm:max-h-[calc(100dvh-6rem)]"
+                  style={{ color: BRAND_CHAMPAGNE }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {onInicio ? (
+                    <button
+                      type="button"
+                      className="rounded-lg py-3 text-left font-medium"
+                      onClick={goInicio}
+                    >
+                      Inicio
+                    </button>
+                  ) : (
+                    <a
+                      href="#inicio"
+                      className="rounded-lg py-3 font-medium"
+                      onClick={closeMobileMenu}
+                    >
+                      Inicio
+                    </a>
+                  )}
 
-            <div className="border-t border-white/10 pt-2">
-              <button
-                type="button"
-                className="flex w-full items-center justify-between rounded-lg py-3 text-left font-medium"
-                onClick={() => setMobileProductsOpen((o) => !o)}
-                aria-expanded={mobileProductsOpen}
-              >
-                Productos
-                <span className="text-white/50">{mobileProductsOpen ? '−' : '+'}</span>
-              </button>
-              {mobileProductsOpen ? (
-                <div className="ml-2 flex flex-col border-l border-white/10 pl-3">
-                  <button
-                    type="button"
-                    className="py-2.5 text-left text-[15px] text-white/90"
-                    onClick={handleIphones}
-                  >
-                    iPhones
-                  </button>
-                  <button
-                    type="button"
-                    className="py-2.5 text-left text-[15px] text-white/90"
-                    onClick={handleAirPods}
-                  >
-                    AirPods
-                  </button>
-                </div>
-              ) : null}
-            </div>
+                  <div className="border-t border-white/10 pt-2">
+                    <button
+                      type="button"
+                      className="flex w-full items-center justify-between rounded-lg py-3 text-left font-medium"
+                      onClick={() => setMobileProductsOpen((o) => !o)}
+                      aria-expanded={mobileProductsOpen}
+                    >
+                      Productos
+                      <span className="text-white/50">{mobileProductsOpen ? '−' : '+'}</span>
+                    </button>
+                    {mobileProductsOpen ? (
+                      <div className="ml-2 flex flex-col border-l border-white/10 pl-3">
+                        <button
+                          type="button"
+                          className="py-2.5 text-left text-[15px] text-white/90"
+                          onClick={handleIphones}
+                        >
+                          iPhones
+                        </button>
+                        <button
+                          type="button"
+                          className="py-2.5 text-left text-[15px] text-white/90"
+                          onClick={handleAirPods}
+                        >
+                          AirPods
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
 
-            {onRecursos ? (
-              <button
-                type="button"
-                className="rounded-lg py-3 text-left font-medium"
-                onClick={goRecursos}
-              >
-                Recursos
-              </button>
-            ) : (
-              <a
-                href="#recursos"
-                className="rounded-lg py-3 font-medium"
-                onClick={closeMobileMenu}
-              >
-                Recursos
-              </a>
-            )}
-          </nav>
-        </div>
-      ) : null}
+                  {onRecursos ? (
+                    <button
+                      type="button"
+                      className="rounded-lg py-3 text-left font-medium"
+                      onClick={goRecursos}
+                    >
+                      Recursos
+                    </button>
+                  ) : (
+                    <a
+                      href="#recursos"
+                      className="rounded-lg py-3 font-medium"
+                      onClick={closeMobileMenu}
+                    >
+                      Recursos
+                    </a>
+                  )}
+                </nav>
+              </div>
+            </>,
+            document.body,
+          )
+        : null}
     </header>
   )
 }

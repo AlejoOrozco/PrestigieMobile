@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, type Variants } from 'motion/react'
 import { Container } from '../components/layout/Container'
 import { Header } from '../components/layout/Header'
@@ -199,6 +199,29 @@ export function ProductCatalogPage({
   const [selectedView, setSelectedView] = useState<'most-wanted' | 'all'>(
     'most-wanted'
   )
+  const [infoPanelOpen, setInfoPanelOpen] = useState(false)
+  const infoWrapRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!infoPanelOpen) return
+    const closeIfOutside = (e: MouseEvent | TouchEvent) => {
+      const root = infoWrapRef.current
+      if (!root) return
+      const t = e.target
+      if (t instanceof Node && !root.contains(t)) setInfoPanelOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setInfoPanelOpen(false)
+    }
+    document.addEventListener('mousedown', closeIfOutside)
+    document.addEventListener('touchstart', closeIfOutside, { passive: true })
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', closeIfOutside)
+      document.removeEventListener('touchstart', closeIfOutside)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [infoPanelOpen])
 
   const mostWantedSet = useMemo(
     () => new Set(mostWantedProductIds),
@@ -373,13 +396,38 @@ export function ProductCatalogPage({
                   </div>
 
                   {infoHoverMessage ? (
-                    <div className="group relative flex items-center">
-                      <span className="inline-flex h-6 w-6 cursor-help items-center justify-center rounded-full border border-[#c9a882]/40 bg-black/40 text-xs font-semibold text-[#edd1ae]">
-                        i
-                      </span>
-                      <div className="pointer-events-none absolute right-0 top-8 z-20 w-[min(90vw,420px)] rounded-lg border border-[#c9a882]/35 bg-black/90 p-2 text-[11px] leading-relaxed text-white/90 opacity-0 shadow-xl transition-opacity group-hover:opacity-100">
+                    <div
+                      ref={infoWrapRef}
+                      className="group relative flex items-center"
+                    >
+                      <button
+                        type="button"
+                        id="catalog-info-trigger"
+                        aria-expanded={infoPanelOpen}
+                        aria-controls="catalog-info-popover"
+                        className="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-[#c9a882]/40 bg-black/40 text-xs font-semibold text-[#edd1ae] transition-colors hover:border-[#c9a882]/55 md:cursor-help"
+                        onClick={() => setInfoPanelOpen((o) => !o)}
+                      >
+                        <span className="sr-only">
+                          Información sobre &quot;{defaultViewLabel}&quot;
+                        </span>
+                        <span aria-hidden>i</span>
+                      </button>
+                      <div
+                        id="catalog-info-popover"
+                        role="region"
+                        aria-labelledby="catalog-info-trigger"
+                        className={[
+                          'absolute right-0 top-8 z-20 w-[min(90vw,420px)] rounded-lg border border-[#c9a882]/35 bg-black/90 p-2 text-[11px] leading-relaxed text-white/90 shadow-xl transition-opacity',
+                          infoPanelOpen
+                            ? 'pointer-events-auto opacity-100'
+                            : 'pointer-events-none opacity-0 md:group-hover:opacity-100',
+                        ].join(' ')}
+                      >
                         {infoHoverMessage}
-                        <span className="ml-1 align-middle">🟢</span>
+                        <span className="ml-1 align-middle" aria-hidden>
+                          🟢
+                        </span>
                       </div>
                     </div>
                   ) : null}
