@@ -213,7 +213,7 @@ export function Header({
         <div className="flex shrink-0 items-center gap-2 md:contents">
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.12] bg-white/[0.04] md:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#c9a882]/30 bg-white/[0.06] shadow-[0_8px_28px_-18px_rgba(201,168,130,0.35)] backdrop-blur-md backdrop-saturate-150 md:hidden"
             style={{ color: BRAND_CHAMPAGNE }}
             aria-expanded={mobileMenuOpen}
             aria-controls="header-mobile-menu"

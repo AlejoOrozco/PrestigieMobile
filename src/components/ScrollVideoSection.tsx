@@ -40,6 +40,7 @@ export type ScrollVideoSectionProps = {
   videoSrc2: string
   copy: ScrollVideoCopy
   onViewProducts?: () => void
+  onGoToProducts?: () => void
   /** Para ocultar el header mientras se reproduce el clip 1 o 2. */
   onPhaseChange?: (phase: ScrollVideoPhase) => void
 }
@@ -50,6 +51,7 @@ export function ScrollVideoSection({
   videoSrc2,
   copy,
   onViewProducts,
+  onGoToProducts,
   onPhaseChange,
 }: ScrollVideoSectionProps) {
   const containerRef = useRef<HTMLElement>(null)
@@ -407,16 +409,16 @@ export function ScrollVideoSection({
       className="relative bg-black"
       style={{ height: `${SCROLL_SECTION_HEIGHT_VH}vh` }}
     >
-      <div className="sticky top-0 z-30 flex h-screen w-full items-center justify-center bg-black">
-        <div className="relative h-full w-full overflow-x-hidden overflow-y-visible">
-          {/* Solo el plano de vídeo se recorta; el texto queda fuera para no cortar ascendentes/descendentes */}
+      <div className="sticky top-0 z-30 relative flex h-[100svh] min-h-0 w-full flex-col bg-black supports-[height:100dvh]:h-[100dvh] md:h-[100dvh]">
+        {/* Video + dim: full stage; out of flex flow */}
+        <div className="pointer-events-none absolute inset-0 overflow-x-hidden overflow-y-visible">
           <div className="absolute inset-0 overflow-hidden">
             <div className="scroll-video-glow" aria-hidden />
 
             <video
               ref={video1Ref}
               key={videoSrc1}
-              className="absolute inset-0 z-[1] h-full w-full object-contain"
+              className="absolute inset-0 z-[1] h-full w-full object-contain object-center"
               src={videoSrc1}
               muted
               playsInline
@@ -427,7 +429,7 @@ export function ScrollVideoSection({
             <video
               ref={video2Ref}
               key={videoSrc2}
-              className="absolute inset-0 z-[1] h-full w-full object-contain opacity-0"
+              className="absolute inset-0 z-[1] h-full w-full object-contain object-center opacity-0"
               src={videoSrc2}
               muted
               playsInline
@@ -442,35 +444,19 @@ export function ScrollVideoSection({
             style={{ opacity: 0 }}
             aria-hidden
           />
+        </div>
 
-          <div className="pointer-events-none absolute inset-0 z-[3] flex flex-col items-center justify-center gap-3 overflow-visible px-6 py-4">
-            <p
-              ref={text1Ref}
-              className="max-w-4xl text-center text-3xl font-medium leading-[1.25] tracking-wide will-change-[filter,opacity,transform] sm:text-4xl sm:leading-[1.28] md:text-5xl md:leading-[1.3]"
-              style={{ letterSpacing: '0.06em', opacity: 0 }}
-            >
-              <ShinyText
-                text={copy.seq1Title}
-                speed={3}
-                delay={1}
-                color={BRAND_CHAMPAGNE}
-                shineColor={BRAND_CHAMPAGNE_SHINE}
-                spread={150}
-                direction="left"
-                yoyo={false}
-                pauseOnHover={false}
-                disabled={false}
-                className="text-3xl font-medium tracking-[0.06em] sm:text-4xl md:text-5xl"
-              />
-            </p>
-            {copy.seq1Subtitle ? (
+        {/* Copy: flex-1 uses the real sticky height (svh/dvh), so flex center matches the visible viewport */}
+        <div className="relative z-[3] flex min-h-0 flex-1 flex-col items-center justify-center px-5 py-8 sm:px-6 pointer-events-none">
+          <div className="relative grid w-full max-w-4xl grid-cols-1 grid-rows-1 place-items-center">
+            <div className="col-start-1 row-start-1 flex w-full flex-col items-center gap-3 text-center">
               <p
-                ref={seq1SubRef}
-                className="max-w-2xl text-center text-sm font-medium leading-relaxed will-change-[filter,opacity,transform] sm:text-base sm:leading-relaxed"
-                style={{ letterSpacing: '0.04em', opacity: 0 }}
+                ref={text1Ref}
+                className="max-w-4xl text-center text-3xl font-medium leading-[1.25] tracking-wide will-change-[filter,opacity,transform] sm:text-4xl sm:leading-[1.28] md:text-5xl md:leading-[1.3]"
+                style={{ letterSpacing: '0.06em', opacity: 0 }}
               >
                 <ShinyText
-                  text={copy.seq1Subtitle}
+                  text={copy.seq1Title}
                   speed={3}
                   delay={1}
                   color={BRAND_CHAMPAGNE}
@@ -480,95 +466,128 @@ export function ScrollVideoSection({
                   yoyo={false}
                   pauseOnHover={false}
                   disabled={false}
-                  className="text-sm sm:text-base"
+                  className="text-3xl font-medium tracking-[0.06em] sm:text-4xl md:text-5xl"
                 />
               </p>
-            ) : null}
-          </div>
-
-          <div
-            ref={scrollHintRef}
-            className="scroll-video-hint pointer-events-none absolute bottom-[12%] left-1/2 z-[4] -translate-x-1/2 px-4"
-            style={{ opacity: 0 }}
-            role="status"
-            aria-live="polite"
-          >
-            <span className="inline-flex items-center rounded-full border border-white/15 bg-black/50 px-4 py-2 shadow-lg backdrop-blur-md will-change-[filter,opacity,transform]">
-              <ShinyText
-                text={copy.scrollHint}
-                speed={3}
-                delay={1}
-                color={BRAND_CHAMPAGNE}
-                shineColor={BRAND_CHAMPAGNE_SHINE}
-                spread={150}
-                direction="left"
-                yoyo={false}
-                pauseOnHover={false}
-                disabled={false}
-                className="text-xs font-medium tracking-wide sm:text-sm"
-              />
-            </span>
-          </div>
-
-          <div className="pointer-events-none absolute inset-0 z-[3] flex flex-col items-center justify-center gap-2 overflow-visible px-6 py-6 text-center">
-            <h2
-              ref={seq2MainRef}
-              className="max-w-4xl text-3xl font-medium leading-[1.28] tracking-wide will-change-[filter,opacity,transform] sm:text-4xl sm:leading-[1.3] md:text-5xl md:leading-[1.32]"
-              style={{ letterSpacing: '0.06em', opacity: 0 }}
-            >
-              <ShinyText
-                text={copy.seq2Title}
-                speed={3}
-                delay={1}
-                color={BRAND_CHAMPAGNE}
-                shineColor={BRAND_CHAMPAGNE_SHINE}
-                spread={150}
-                direction="left"
-                yoyo={false}
-                pauseOnHover={false}
-                disabled={false}
-                className="text-3xl font-medium tracking-[0.06em] sm:text-4xl md:text-5xl"
-              />
-            </h2>
-            {copy.seq2Subtitle ? (
-              <p
-                ref={seq2SubRef}
-                className="mx-auto mt-1 max-w-xl text-sm will-change-[filter,opacity,transform] sm:mt-2 sm:text-base"
-                style={{ opacity: 0 }}
-              >
-                <ShinyText
-                  text={copy.seq2Subtitle}
-                  speed={3}
-                  delay={1}
-                  color={BRAND_CHAMPAGNE}
-                  shineColor={BRAND_CHAMPAGNE_SHINE}
-                  spread={150}
-                  direction="left"
-                  yoyo={false}
-                  pauseOnHover={false}
-                  disabled={false}
-                  className="text-sm sm:text-base"
-                />
-              </p>
-            ) : null}
-            {onViewProducts ? (
-              <div
-                ref={productsCtaRef}
-                className="mt-8 max-w-md will-change-[filter,opacity,transform]"
-                style={{ opacity: 0 }}
-              >
-                <button
-                  type="button"
-                  onClick={onViewProducts}
-                  className="pointer-events-auto w-full rounded-full border border-[#c9a882]/45 bg-black/40 px-6 py-3 text-sm font-medium tracking-wide backdrop-blur-sm transition-colors hover:bg-[#c9a882]/15 sm:text-base"
-                  style={{ color: BRAND_CHAMPAGNE }}
+              {copy.seq1Subtitle ? (
+                <p
+                  ref={seq1SubRef}
+                  className="max-w-2xl text-center text-sm font-medium leading-relaxed will-change-[filter,opacity,transform] sm:text-base sm:leading-relaxed"
+                  style={{ letterSpacing: '0.04em', opacity: 0 }}
                 >
-                  {copy.ctaLabel}
-                </button>
-              </div>
-            ) : null}
+                  <ShinyText
+                    text={copy.seq1Subtitle}
+                    speed={3}
+                    delay={1}
+                    color={BRAND_CHAMPAGNE}
+                    shineColor={BRAND_CHAMPAGNE_SHINE}
+                    spread={150}
+                    direction="left"
+                    yoyo={false}
+                    pauseOnHover={false}
+                    disabled={false}
+                    className="text-sm sm:text-base"
+                  />
+                </p>
+              ) : null}
+            </div>
+
+            <div className="col-start-1 row-start-1 flex w-full flex-col items-center gap-2 text-center">
+              <h2
+                ref={seq2MainRef}
+                className="max-w-4xl text-3xl font-medium leading-[1.28] tracking-wide will-change-[filter,opacity,transform] sm:text-4xl sm:leading-[1.3] md:text-5xl md:leading-[1.32]"
+                style={{ letterSpacing: '0.06em', opacity: 0 }}
+              >
+                <ShinyText
+                  text={copy.seq2Title}
+                  speed={3}
+                  delay={1}
+                  color={BRAND_CHAMPAGNE}
+                  shineColor={BRAND_CHAMPAGNE_SHINE}
+                  spread={150}
+                  direction="left"
+                  yoyo={false}
+                  pauseOnHover={false}
+                  disabled={false}
+                  className="text-3xl font-medium tracking-[0.06em] sm:text-4xl md:text-5xl"
+                />
+              </h2>
+              {copy.seq2Subtitle ? (
+                <p
+                  ref={seq2SubRef}
+                  className="mx-auto mt-1 max-w-xl text-sm will-change-[filter,opacity,transform] sm:mt-2 sm:text-base"
+                  style={{ opacity: 0 }}
+                >
+                  <ShinyText
+                    text={copy.seq2Subtitle}
+                    speed={3}
+                    delay={1}
+                    color={BRAND_CHAMPAGNE}
+                    shineColor={BRAND_CHAMPAGNE_SHINE}
+                    spread={150}
+                    direction="left"
+                    yoyo={false}
+                    pauseOnHover={false}
+                    disabled={false}
+                    className="text-sm sm:text-base"
+                  />
+                </p>
+              ) : null}
+              {onViewProducts ? (
+                <div
+                  ref={productsCtaRef}
+                  className="mt-8 max-w-md will-change-[filter,opacity,transform]"
+                  style={{ opacity: 0 }}
+                >
+                  <button
+                    type="button"
+                    onClick={onViewProducts}
+                    className="pointer-events-auto w-full rounded-full border border-[#c9a882]/45 bg-black/40 px-6 py-3 text-sm font-medium tracking-wide backdrop-blur-sm transition-colors hover:bg-[#c9a882]/15 sm:text-base"
+                    style={{ color: BRAND_CHAMPAGNE }}
+                  >
+                    {copy.ctaLabel}
+                  </button>
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
+
+        <div
+          ref={scrollHintRef}
+          className="scroll-video-hint pointer-events-none absolute bottom-[max(1.25rem,env(safe-area-inset-bottom,0px))] left-1/2 z-[4] w-[min(100%,24rem)] -translate-x-1/2 px-4 sm:bottom-[12%]"
+          style={{ opacity: 0 }}
+          role="status"
+          aria-live="polite"
+        >
+          <span className="inline-flex w-full items-center justify-center rounded-full border border-white/15 bg-black/50 px-4 py-2 shadow-lg backdrop-blur-md will-change-[filter,opacity,transform]">
+            <ShinyText
+              text={copy.scrollHint}
+              speed={3}
+              delay={1}
+              color={BRAND_CHAMPAGNE}
+              shineColor={BRAND_CHAMPAGNE_SHINE}
+              spread={150}
+              direction="left"
+              yoyo={false}
+              pauseOnHover={false}
+              disabled={false}
+              className="text-xs font-medium tracking-wide sm:text-sm"
+            />
+          </span>
+        </div>
+
+        {onGoToProducts ? (
+          <div className="absolute bottom-[max(0.75rem,env(safe-area-inset-bottom,0px))] left-1/2 z-[5] -translate-x-1/2 sm:bottom-6">
+            <button
+              type="button"
+              onClick={onGoToProducts}
+              className="pointer-events-auto rounded-full border border-[#c9a882]/45 bg-black/40 px-4 py-1.5 text-[11px] font-medium tracking-wide text-[#c9a882] backdrop-blur-sm transition-colors hover:bg-[#c9a882]/15 sm:text-xs"
+            >
+              ir a los productos
+            </button>
+          </div>
+        ) : null}
       </div>
     </section>
   )

@@ -22,11 +22,11 @@ export function HeroSection({
   return (
     <Section
       id="inicio"
-      className="relative z-10 flex min-h-[calc(100dvh-3.5rem)] flex-col bg-transparent md:min-h-[calc(100vh-4.5rem)]"
+      className="relative z-10 flex w-full flex-col bg-transparent py-3 max-md:min-h-[calc(100svh-4.5rem)] max-md:overflow-visible md:min-h-[calc(100vh-4.5rem)] md:py-0"
     >
-      <Container className="relative flex min-h-full flex-1 flex-col pt-2 pb-2 max-md:px-3 sm:pt-6 sm:pb-4 md:pt-8 md:pb-6">
-        <div className="flex min-h-full flex-1 flex-col items-center justify-center gap-1.5 py-1 max-md:justify-evenly sm:gap-4 sm:py-4 md:gap-5">
-          <div className="w-full max-w-6xl text-center">
+      <Container className="relative flex w-full max-w-6xl flex-col pt-2 pb-4 max-md:min-h-0 max-md:flex-1 max-md:overflow-visible max-md:px-3 md:min-h-full md:flex-1 md:pt-6 md:pb-6 md:px-4 lg:pt-8 lg:pb-8">
+        <div className="flex w-full flex-col items-center gap-3 py-1 max-md:min-h-0 max-md:flex-1 max-md:justify-center max-md:gap-3 md:min-h-0 md:flex-1 md:justify-center md:gap-5 md:py-2">
+          <div className="w-full max-w-6xl shrink-0 text-center">
             <img
               src={logoSrc}
               alt="Pretigie Mobile"
@@ -89,7 +89,7 @@ export function HeroSection({
             />
           </div>
 
-          <div className="grid w-full max-w-5xl grid-cols-1 place-content-center gap-1.5 px-0 sm:gap-3 md:grid-cols-2 md:gap-4">
+          <div className="mt-8 grid w-full max-w-5xl shrink-0 grid-cols-1 justify-items-center gap-3 px-0 sm:mt-10 sm:gap-4 md:mt-14 md:grid-cols-2 md:gap-4">
             <CategoryCard
               label="Explora iPhones"
               imageSrc={iphoneImg}
@@ -109,7 +109,7 @@ export function HeroSection({
             delay={110}
             animateBy="words"
             direction="top"
-            className="justify-center px-1 text-center text-[10px] leading-tight sm:px-2 sm:text-xs sm:text-sm"
+            className="shrink-0 justify-center px-1 text-center text-[10px] leading-tight sm:px-2 sm:text-xs sm:text-sm"
             style={{ color: BRAND_CHAMPAGNE }}
           />
         </div>

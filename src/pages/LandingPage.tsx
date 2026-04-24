@@ -12,6 +12,7 @@ import {
   SCROLL_VIDEO_COPY_IPHONE,
 } from '../constants/scrollVideoCopy'
 import LightRays from '../components/ui/LightRays'
+import { WhatsAppFloatingButton } from '../components/ui/WhatsAppFloatingButton'
 
 import videoAirpods1 from '../video/secuences/Secuence1.mp4'
 import videoAirpods2 from '../video/secuences/Secuence2.mp4'
@@ -60,8 +61,10 @@ export function LandingPage({
     (airpodsScrollActive || iphoneScrollActive) &&
     (scrollPhase === 'seq1' || scrollPhase === 'seq2')
 
+  const goToIphoneProducts = () => onOpenProducts?.('iphones')
+
   return (
-    <div className="relative min-h-[100dvh] bg-black text-white md:min-h-screen">
+    <div className="relative flex min-h-[100dvh] min-h-[100svh] flex-col bg-black text-white md:min-h-screen">
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 z-0"
@@ -101,7 +104,7 @@ export function LandingPage({
         }
       />
 
-      <div className="relative z-10">
+      <div className="relative z-10 overflow-visible">
         <HeroSection
           onExploreAirPods={() => {
             setIphoneScrollActive(false)
@@ -123,6 +126,7 @@ export function LandingPage({
           videoSrc2={videoAirpods2}
           copy={SCROLL_VIDEO_COPY_AIRPODS}
           onViewProducts={onViewProducts}
+          onGoToProducts={goToIphoneProducts}
           onPhaseChange={setScrollPhase}
         />
       ) : null}
@@ -134,11 +138,22 @@ export function LandingPage({
           videoSrc2={videoIphone2}
           copy={SCROLL_VIDEO_COPY_IPHONE}
           onViewProducts={onViewIphoneProducts}
+          onGoToProducts={goToIphoneProducts}
           onPhaseChange={setScrollPhase}
         />
       ) : null}
 
-      <SiteCreditFooter />
+      <section
+        id="recursos"
+        tabIndex={-1}
+        className="scroll-mt-20 shrink-0 outline-none max-md:h-0 max-md:overflow-hidden max-md:p-0"
+      >
+        <SiteCreditFooter
+          withRecursosAnchor={false}
+          className="hidden md:block"
+        />
+      </section>
+      <WhatsAppFloatingButton message="hola, vengo de la pagina web, me podrias ayudar?" />
     </div>
   )
 }

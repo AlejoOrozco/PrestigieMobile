@@ -1,21 +1,25 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion, type Variants } from 'motion/react'
 import { Container } from '../components/layout/Container'
 import { Header } from '../components/layout/Header'
 import { SiteCreditFooter } from '../components/layout/SiteCreditFooter'
 import LightRays from '../components/ui/LightRays'
+import { WhatsAppFloatingButton } from '../components/ui/WhatsAppFloatingButton'
 import { BRAND_CHAMPAGNE } from '../constants/brandColors'
 
 export type CatalogProduct = {
   id: string
   name: string
   category: string
-  priceCop: number
+  priceCop: number | null
   detail: string
   specs: string[]
   imageUrls: string[]
   batteryPercent?: number
   priceShowDesde?: boolean
+  color?: string
+  model?: string
+  storage?: string
 }
 
 export type ProductCatalogPageProps = {
@@ -25,6 +29,10 @@ export type ProductCatalogPageProps = {
   onRecursos: () => void
   products: CatalogProduct[]
   heading: string
+  enableFilters?: boolean
+  defaultViewLabel?: string
+  mostWantedProductIds?: string[]
+  infoHoverMessage?: string
 }
 
 function formatCOP(amount: number) {
@@ -52,6 +60,12 @@ function whatsappUrlForProduct(p: CatalogProduct): string {
     ? `Hola, me interesa el ${p.name}, ¿me podrías dar más información por favor?`
     : `Hola, me interesan los ${p.name}, ¿me podrías dar más información por favor?`
 
+  return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
+}
+
+function whatsappUrlWithText(text: string): string {
+  const phone = whatsappPhoneDigits()
+  if (!phone) return '#'
   return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
 }
 
@@ -109,7 +123,20 @@ function ProductCardImages({
   }, [urls.length])
 
   return (
-    <div className="relative aspect-[4/3] w-full max-h-[min(28vh,140px)] overflow-hidden rounded-lg bg-white/[0.06] sm:max-h-[120px]">
+    <div className="relative w-full">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-4 -bottom-2 z-[1] h-7 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(201,168,130,0.2)_0%,rgba(201,168,130,0.08)_42%,transparent_75%)] blur-md"
+      />
+      <div
+        className="relative z-[2] aspect-[4/3] w-full max-h-[min(28vh,140px)] overflow-hidden rounded-lg bg-white/[0.06] sm:max-h-[120px]"
+        style={{
+          maskImage:
+            'linear-gradient(to bottom, black 0%, black 80%, transparent 100%)',
+          WebkitMaskImage:
+            'linear-gradient(to bottom, black 0%, black 80%, transparent 100%)',
+        }}
+      >
       {urls.map((src, i) => (
         <img
           key={`${src}-${i}`}
@@ -117,12 +144,37 @@ function ProductCardImages({
           alt=""
           loading={i === 0 ? 'eager' : 'lazy'}
           className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500"
-          style={{ opacity: i === idx ? 1 : 0 }}
+          style={{
+            opacity: i === idx ? 1 : 0,
+            maskImage:
+              'radial-gradient(120% 95% at 50% 48%, black 58%, transparent 100%)',
+            WebkitMaskImage:
+              'radial-gradient(120% 95% at 50% 48%, black 58%, transparent 100%)',
+          }}
         />
       ))}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.28)_0%,rgba(0,0,0,0.04)_36%,rgba(0,0,0,0.62)_100%)]"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(140%_100%_at_50%_55%,transparent_45%,rgba(0,0,0,0.45)_100%)] ring-1 ring-inset ring-white/10"
+        style={{
+          maskImage:
+            'radial-gradient(120% 90% at 50% 55%, transparent 56%, black 100%)',
+          WebkitMaskImage:
+            'radial-gradient(120% 90% at 50% 55%, transparent 56%, black 100%)',
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#090909] via-[#090909]/75 to-transparent"
+      />
       <span className="sr-only">
         {name}: imagen {idx + 1} de {urls.length}
       </span>
+      </div>
     </div>
   )
 }
@@ -134,7 +186,124 @@ export function ProductCatalogPage({
   onRecursos,
   products,
   heading,
+  enableFilters = false,
+  defaultViewLabel = 'Los mas deseados',
+  mostWantedProductIds = [],
+  infoHoverMessage,
 }: ProductCatalogPageProps) {
+  const [selectedColor, setSelectedColor] = useState('all')
+  const [selectedModel, setSelectedModel] = useState('all')
+  const [selectedStorage, setSelectedStorage] = useState('all')
+  const [selectedBattery, setSelectedBattery] = useState('all')
+  const [selectedPrice, setSelectedPrice] = useState('all')
+  const [selectedView, setSelectedView] = useState<'most-wanted' | 'all'>(
+    'most-wanted'
+  )
+
+  const mostWantedSet = useMemo(
+    () => new Set(mostWantedProductIds),
+    [mostWantedProductIds]
+  )
+
+  const colors = useMemo(
+    () =>
+      Array.from(
+        new Set(products.map((p) => p.color?.trim()).filter(Boolean) as string[])
+      ).sort((a, b) => a.localeCompare(b)),
+    [products]
+  )
+
+  const models = useMemo(
+    () =>
+      Array.from(
+        new Set(products.map((p) => p.model?.trim()).filter(Boolean) as string[])
+      ).sort((a, b) => a.localeCompare(b)),
+    [products]
+  )
+
+  const storages = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          products.map((p) => p.storage?.trim()).filter(Boolean) as string[]
+        )
+      ).sort((a, b) => a.localeCompare(b)),
+    [products]
+  )
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
+      if (
+        enableFilters &&
+        selectedView === 'most-wanted' &&
+        mostWantedSet.size > 0 &&
+        !mostWantedSet.has(p.id)
+      ) {
+        return false
+      }
+
+      if (selectedColor !== 'all' && p.color !== selectedColor) return false
+      if (selectedModel !== 'all' && p.model !== selectedModel) return false
+      if (selectedStorage !== 'all' && p.storage !== selectedStorage) return false
+
+      if (selectedPrice !== 'all') {
+        const price = p.priceCop
+        if (price == null) return false
+        if (selectedPrice === '600k-1m' && (price < 600_000 || price > 1_000_000))
+          return false
+        if (
+          selectedPrice === '1m-2m' &&
+          (price < 1_000_000 || price > 2_000_000)
+        )
+          return false
+        if (
+          selectedPrice === '2m-3m' &&
+          (price < 2_000_000 || price > 3_000_000)
+        )
+          return false
+        if (
+          selectedPrice === '3m-4m' &&
+          (price < 3_000_000 || price > 4_000_000)
+        )
+          return false
+      }
+
+      if (selectedBattery !== 'all') {
+        const battery = p.batteryPercent
+        if (battery == null) return false
+        if (selectedBattery === '80-85' && (battery < 80 || battery > 85))
+          return false
+        if (selectedBattery === '86-90' && (battery < 86 || battery > 90))
+          return false
+        if (selectedBattery === '91-100' && (battery < 91 || battery > 100))
+          return false
+      }
+
+      return true
+    })
+  }, [
+    enableFilters,
+    mostWantedSet,
+    products,
+    selectedBattery,
+    selectedColor,
+    selectedModel,
+    selectedPrice,
+    selectedStorage,
+    selectedView,
+  ])
+
+  const hasActiveFilters =
+    selectedColor !== 'all' ||
+    selectedModel !== 'all' ||
+    selectedStorage !== 'all' ||
+    selectedBattery !== 'all' ||
+    selectedPrice !== 'all' ||
+    selectedView !== 'most-wanted'
+
+  const missingModelWhatsappUrl = whatsappUrlWithText(
+    'hola, no encontre el modelo de iphone que queria, me podrias ayudar?'
+  )
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-black text-white">
       <div
@@ -175,6 +344,113 @@ export function ProductCatalogPage({
               {heading}
             </h1>
 
+            {enableFilters ? (
+              <section className="mt-3 rounded-xl border border-[#c9a882]/25 bg-white/[0.03] p-3 shadow-[0_16px_48px_-32px_rgba(201,168,130,0.35)] backdrop-blur-sm sm:mt-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedView('most-wanted')}
+                      className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                        selectedView === 'most-wanted'
+                          ? 'border-[#c9a882]/55 bg-[#c9a882]/20 text-[#edd1ae]'
+                          : 'border-white/20 bg-black/25 text-white/80 hover:border-[#c9a882]/45'
+                      }`}
+                    >
+                      {defaultViewLabel}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedView('all')}
+                      className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                        selectedView === 'all'
+                          ? 'border-[#c9a882]/55 bg-[#c9a882]/20 text-[#edd1ae]'
+                          : 'border-white/20 bg-black/25 text-white/80 hover:border-[#c9a882]/45'
+                      }`}
+                    >
+                      Todos
+                    </button>
+                  </div>
+
+                  {infoHoverMessage ? (
+                    <div className="group relative flex items-center">
+                      <span className="inline-flex h-6 w-6 cursor-help items-center justify-center rounded-full border border-[#c9a882]/40 bg-black/40 text-xs font-semibold text-[#edd1ae]">
+                        i
+                      </span>
+                      <div className="pointer-events-none absolute right-0 top-8 z-20 w-[min(90vw,420px)] rounded-lg border border-[#c9a882]/35 bg-black/90 p-2 text-[11px] leading-relaxed text-white/90 opacity-0 shadow-xl transition-opacity group-hover:opacity-100">
+                        {infoHoverMessage}
+                        <span className="ml-1 align-middle">🟢</span>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-5">
+                  <select
+                    value={selectedColor}
+                    onChange={(e) => setSelectedColor(e.target.value)}
+                    className="rounded-lg border border-white/20 bg-black/35 px-2 py-2 text-xs text-white outline-none transition-colors hover:border-[#c9a882]/45 focus:border-[#c9a882]/55"
+                  >
+                    <option value="all">Color</option>
+                    {colors.map((color) => (
+                      <option key={color} value={color}>
+                        {color}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={selectedModel}
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                    className="rounded-lg border border-white/20 bg-black/35 px-2 py-2 text-xs text-white outline-none transition-colors hover:border-[#c9a882]/45 focus:border-[#c9a882]/55"
+                  >
+                    <option value="all">Modelo</option>
+                    {models.map((model) => (
+                      <option key={model} value={model}>
+                        {model}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={selectedStorage}
+                    onChange={(e) => setSelectedStorage(e.target.value)}
+                    className="rounded-lg border border-white/20 bg-black/35 px-2 py-2 text-xs text-white outline-none transition-colors hover:border-[#c9a882]/45 focus:border-[#c9a882]/55"
+                  >
+                    <option value="all">Almacenamiento</option>
+                    {storages.map((storage) => (
+                      <option key={storage} value={storage}>
+                        {storage}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={selectedBattery}
+                    onChange={(e) => setSelectedBattery(e.target.value)}
+                    className="rounded-lg border border-white/20 bg-black/35 px-2 py-2 text-xs text-white outline-none transition-colors hover:border-[#c9a882]/45 focus:border-[#c9a882]/55"
+                  >
+                    <option value="all">Batería</option>
+                    <option value="80-85">80% - 85%</option>
+                    <option value="86-90">86% - 90%</option>
+                    <option value="91-100">91% - 100%</option>
+                  </select>
+
+                  <select
+                    value={selectedPrice}
+                    onChange={(e) => setSelectedPrice(e.target.value)}
+                    className="rounded-lg border border-white/20 bg-black/35 px-2 py-2 text-xs text-white outline-none transition-colors hover:border-[#c9a882]/45 focus:border-[#c9a882]/55"
+                  >
+                    <option value="all">Precio</option>
+                    <option value="600k-1m">600.000 COP - 1.000.000 COP</option>
+                    <option value="1m-2m">1.000.000 COP - 2.000.000 COP</option>
+                    <option value="2m-3m">2.000.000 COP - 3.000.000 COP</option>
+                    <option value="3m-4m">3.000.000 COP - 4.000.000 COP</option>
+                  </select>
+                </div>
+              </section>
+            ) : null}
+
             <motion.ul
               className="mt-3 grid gap-2.5 sm:mt-4 sm:gap-4"
               style={{
@@ -184,7 +460,7 @@ export function ProductCatalogPage({
               initial="hidden"
               animate="visible"
             >
-              {products.map((p) => (
+              {filteredProducts.map((p) => (
                 <motion.li
                   key={p.id}
                   className="min-w-0 [will-change:transform,opacity,filter]"
@@ -206,11 +482,13 @@ export function ProductCatalogPage({
                         >
                           {p.category}
                         </span>
-                        <span className="text-right text-[11px] font-semibold tabular-nums text-white sm:text-xs">
-                          {p.priceShowDesde
-                            ? `Desde ${formatCOP(p.priceCop)}`
-                            : formatCOP(p.priceCop)}
-                        </span>
+                        {p.priceCop != null ? (
+                          <span className="text-right text-[11px] font-semibold tabular-nums text-white sm:text-xs">
+                            {p.priceShowDesde
+                              ? `Desde ${formatCOP(p.priceCop)}`
+                              : formatCOP(p.priceCop)}
+                          </span>
+                        ) : null}
                       </div>
                       <h2 className="text-xs font-semibold leading-snug text-white sm:text-sm">
                         {p.name}
@@ -241,16 +519,32 @@ export function ProductCatalogPage({
                         style={{ color: BRAND_CHAMPAGNE }}
                         aria-label={`Contactar por WhatsApp sobre ${p.name}`}
                       >
-                        Me gustan estos
+                        Me interesa
                       </a>
                     </div>
                   </article>
                 </motion.li>
               ))}
             </motion.ul>
+
+            {enableFilters && hasActiveFilters && filteredProducts.length === 0 ? (
+              <div className="mt-4 rounded-xl border border-[#c9a882]/25 bg-white/[0.03] p-4 text-center text-sm text-white/80 shadow-[0_16px_48px_-32px_rgba(201,168,130,0.35)] backdrop-blur-sm">
+                no encontraste lo que necesitabas?{' '}
+                <a
+                  href={missingModelWhatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline decoration-white/25 underline-offset-2 transition-colors hover:text-white/95 hover:decoration-white/40"
+                  style={{ color: BRAND_CHAMPAGNE }}
+                >
+                  contactanos
+                </a>
+              </div>
+            ) : null}
           </Container>
+          <SiteCreditFooter />
         </main>
-        <SiteCreditFooter />
+        <WhatsAppFloatingButton message="hola, vengo de la pagina web, me podrias ayudar?" />
       </div>
     </div>
   )
