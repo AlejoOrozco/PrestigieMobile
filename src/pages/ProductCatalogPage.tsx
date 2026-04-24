@@ -71,8 +71,6 @@ function whatsappUrlWithText(text: string): string {
 
 const IMAGE_ROTATE_MS = 3800
 
-const CARD_MIN_PX = '220px'
-
 const CARD_BLUR_STEP_DURATION = 0.58
 const CARD_BLUR_STEPS = 2
 const CARD_BLUR_TOTAL_DURATION = CARD_BLUR_STEP_DURATION * CARD_BLUR_STEPS
@@ -543,7 +541,7 @@ export function ProductCatalogPage({
             <motion.ul
               className={[
                 'mt-3 grid gap-2 max-sm:grid-cols-2 sm:mt-4 sm:gap-4',
-                `sm:[grid-template-columns:repeat(auto-fill,minmax(${CARD_MIN_PX},1fr))]`,
+                'sm:[grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]',
               ].join(' ')}
               variants={cardListVariants}
               initial="hidden"
