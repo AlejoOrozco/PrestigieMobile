@@ -129,7 +129,7 @@ function ProductCardImages({
         className="pointer-events-none absolute inset-x-4 -bottom-2 z-[1] h-7 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(201,168,130,0.2)_0%,rgba(201,168,130,0.08)_42%,transparent_75%)] blur-md"
       />
       <div
-        className="relative z-[2] aspect-[4/3] w-full max-h-[min(28vh,140px)] overflow-hidden rounded-lg bg-white/[0.06] sm:max-h-[120px]"
+        className="relative z-[2] aspect-[4/3] w-full max-h-[min(22vh,96px)] overflow-hidden rounded-lg bg-white/[0.06] sm:max-h-[120px]"
         style={{
           maskImage:
             'linear-gradient(to bottom, black 0%, black 80%, transparent 100%)',
@@ -200,6 +200,7 @@ export function ProductCatalogPage({
     'most-wanted'
   )
   const [infoPanelOpen, setInfoPanelOpen] = useState(false)
+  const [mobileFiltersExpanded, setMobileFiltersExpanded] = useState(false)
   const infoWrapRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -433,7 +434,47 @@ export function ProductCatalogPage({
                   ) : null}
                 </div>
 
-                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-5">
+                <button
+                  type="button"
+                  id="catalog-filters-toggle"
+                  aria-expanded={mobileFiltersExpanded}
+                  aria-controls="catalog-filters-panel"
+                  className="mt-3 flex w-full items-center justify-between gap-2 rounded-lg border border-white/20 bg-black/35 px-3 py-2 text-left text-xs transition-colors hover:border-[#c9a882]/45 md:hidden"
+                  onClick={() => setMobileFiltersExpanded((v) => !v)}
+                >
+                  <span className="font-medium" style={{ color: BRAND_CHAMPAGNE }}>
+                    Filtros
+                  </span>
+                  <span className="flex items-center gap-1.5 text-white/55">
+                    <span className="sr-only">
+                      {mobileFiltersExpanded
+                        ? 'Ocultar filtros avanzados'
+                        : 'Mostrar filtros avanzados'}
+                    </span>
+                    <svg
+                      className={`h-5 w-5 shrink-0 text-[#c9a882] transition-transform duration-200 ease-out ${
+                        mobileFiltersExpanded ? 'rotate-180' : ''
+                      }`}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </span>
+                </button>
+
+                <div
+                  id="catalog-filters-panel"
+                  className={[
+                    'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-5',
+                    mobileFiltersExpanded ? 'max-md:mt-2' : 'max-md:hidden',
+                  ].join(' ')}
+                >
                   <select
                     value={selectedColor}
                     onChange={(e) => setSelectedColor(e.target.value)}
@@ -500,10 +541,10 @@ export function ProductCatalogPage({
             ) : null}
 
             <motion.ul
-              className="mt-3 grid gap-2.5 sm:mt-4 sm:gap-4"
-              style={{
-                gridTemplateColumns: `repeat(auto-fill, minmax(${CARD_MIN_PX}, 1fr))`,
-              }}
+              className={[
+                'mt-3 grid gap-2 max-sm:grid-cols-2 sm:mt-4 sm:gap-4',
+                `sm:[grid-template-columns:repeat(auto-fill,minmax(${CARD_MIN_PX},1fr))]`,
+              ].join(' ')}
               variants={cardListVariants}
               initial="hidden"
               animate="visible"
@@ -514,15 +555,15 @@ export function ProductCatalogPage({
                   className="min-w-0 [will-change:transform,opacity,filter]"
                   variants={cardItemVariants}
                 >
-                  <article className="flex h-full w-full min-w-0 flex-col overflow-hidden rounded-xl border border-[#c9a882]/25 bg-white/[0.03] p-3 shadow-[0_16px_48px_-32px_rgba(201,168,130,0.35)] transition-colors hover:border-[#c9a882]/45 sm:p-3">
+                  <article className="flex h-full w-full min-w-0 flex-col overflow-hidden rounded-lg border border-[#c9a882]/25 bg-white/[0.03] p-2 shadow-[0_16px_48px_-32px_rgba(201,168,130,0.35)] transition-colors hover:border-[#c9a882]/45 sm:rounded-xl sm:p-3">
                     <div className="shrink-0">
                       <ProductCardImages name={p.name} urls={p.imageUrls} />
                     </div>
 
-                    <div className="mt-2 flex min-h-0 flex-1 flex-col overflow-hidden">
-                      <div className="mb-1.5 flex flex-wrap items-start justify-between gap-1.5">
+                    <div className="mt-1.5 flex min-h-0 flex-1 flex-col overflow-hidden sm:mt-2">
+                      <div className="mb-1 flex flex-wrap items-start justify-between gap-1 sm:mb-1.5 sm:gap-1.5">
                         <span
-                          className="rounded-full px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide"
+                          className="rounded-full px-1.5 py-0.5 text-[8px] font-medium uppercase tracking-wide sm:px-2 sm:text-[9px]"
                           style={{
                             color: BRAND_CHAMPAGNE,
                             backgroundColor: 'rgba(201, 168, 130, 0.12)',
@@ -531,29 +572,29 @@ export function ProductCatalogPage({
                           {p.category}
                         </span>
                         {p.priceCop != null ? (
-                          <span className="text-right text-[11px] font-semibold tabular-nums text-white sm:text-xs">
+                          <span className="text-right text-[10px] font-semibold tabular-nums text-white sm:text-xs">
                             {p.priceShowDesde
                               ? `Desde ${formatCOP(p.priceCop)}`
                               : formatCOP(p.priceCop)}
                           </span>
                         ) : null}
                       </div>
-                      <h2 className="text-xs font-semibold leading-snug text-white sm:text-sm">
+                      <h2 className="text-[11px] font-semibold leading-snug text-white max-sm:line-clamp-2 sm:text-xs sm:leading-snug md:text-sm">
                         {p.name}
                       </h2>
-                      <p className="mt-1 line-clamp-3 text-[11px] leading-relaxed text-white/75 sm:text-xs">
+                      <p className="mt-0.5 line-clamp-2 text-[10px] leading-relaxed text-white/75 sm:mt-1 sm:line-clamp-3 sm:text-xs">
                         {p.detail}
                       </p>
-                      <ul className="mt-2 flex flex-wrap gap-1.5">
+                      <ul className="mt-1.5 flex flex-wrap gap-1 sm:mt-2 sm:gap-1.5">
                         {p.batteryPercent != null ? (
-                          <li className="rounded border border-white/10 bg-black/30 px-1.5 py-0.5 text-[9px] text-white/85 sm:text-[10px]">
+                          <li className="rounded border border-white/10 bg-black/30 px-1 py-0.5 text-[8px] text-white/85 sm:px-1.5 sm:text-[10px]">
                             🔋{p.batteryPercent}%
                           </li>
                         ) : null}
                         {p.specs.map((s) => (
                           <li
                             key={s}
-                            className="rounded border border-white/10 bg-black/30 px-1.5 py-0.5 text-[9px] text-white/85 sm:text-[10px]"
+                            className="rounded border border-white/10 bg-black/30 px-1 py-0.5 text-[8px] text-white/85 max-sm:max-w-full max-sm:truncate sm:px-1.5 sm:text-[10px]"
                           >
                             {s}
                           </li>
@@ -563,7 +604,7 @@ export function ProductCatalogPage({
                         href={whatsappUrlForProduct(p)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-2 block w-full rounded-lg border border-[#c9a882]/40 py-1.5 text-center text-[11px] font-medium transition-colors hover:bg-[#c9a882]/10 sm:text-xs"
+                        className="mt-1.5 block w-full rounded-md border border-[#c9a882]/40 py-1 text-center text-[10px] font-medium transition-colors hover:bg-[#c9a882]/10 sm:mt-2 sm:rounded-lg sm:py-1.5 sm:text-xs"
                         style={{ color: BRAND_CHAMPAGNE }}
                         aria-label={`Contactar por WhatsApp sobre ${p.name}`}
                       >
